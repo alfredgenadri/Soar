@@ -1,0 +1,6 @@
+/* Style for the placeholder text */
+.form-control::placeholder {
+    color: #646464; /* White placeholder text */
+    opacity: 0.8; /* Slight transparency */
+  }
+  

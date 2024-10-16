@@ -1,0 +1,89 @@
+.navbar {
+  background-color: #fff;
+  padding: 20px 40px; /* More padding to provide space for logo and nav items */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-left,
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 30px; /* Adjusted gap for proper spacing */
+}
+
+.nav-text {
+  font-size: 16px;
+  color: #000000;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #000;
+  padding-left: 50px;
+  padding-right: 50px;
+}
+
+.nav-right {
+  margin-left: auto; /* Ensure the right section stays on the far right */
+}
+
+/* Video Section */
+.video-section {
+  position: relative;
+  height: 100vh; /* Full screen height */
+  overflow: hidden;
+  margin: 0; /* No extra space below */
+}
+
+.video-section video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.container-2 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #ffffff;
+  max-width: 800px;
+}
+
+.heading-2 {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  color: #ffffff; /* Header text black */
+  margin-bottom: 10%;
+}
+
+.text-block {
+  
+  
+  color: #ffffff;
+  
+  display: inline-block;
+  
+  font-size: 1.2rem;
+  background-color: transparent; /* Remove background color */
+  cursor: pointer;
+  transition: transform 0.3s ease; /* Add animation for hover */
+}
+
+.text-block:hover {
+  transform: scale(1.05); /* Slight scaling on hover */
+}
+
+.footer {
+  display: none; /* Remove footer below the video */
+}

@@ -1,3 +1,4 @@
+/*
 import React, { useState } from 'react';
 import { Group, Button, TextInput, PasswordInput, Text, Stack, Paper, Title } from '@mantine/core';
 import axios from 'axios';
@@ -17,11 +18,9 @@ const AppNavbar = () => {
       if (isLogin) {
         const response = await axios.post('http://localhost:8000/api/users/login/', { username, password });
         localStorage.setItem('token', response.data.access);
-        // Handle successful login (e.g., redirect or update state)
       } else {
         await axios.post('http://localhost:8000/api/users/register/', { username, email, password });
         setIsLogin(true);
-        // Handle successful registration (e.g., show success message)
       }
     } catch (error) {
       setError('Authentication failed. Please check your credentials.');
@@ -67,3 +66,6 @@ const AppNavbar = () => {
 };
 
 export default AppNavbar;
+*/
+
+export {};

@@ -1,0 +1,39 @@
+/* src/pages/AuthPage.css */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f7f8fa;
+  }
+  
+  .auth-box {
+    max-width: 400px;
+    width: 100%;
+    padding: 2rem;
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+  }
+  
+  button {
+    margin-top: 20px;
+    background-color: #007bff;
+    color: white;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
+  .auth-form {
+    transition: opacity 0.5s ease, visibility 0.5s ease; /* Smooth transition */
+    opacity: 0;
+    visibility: hidden;
+  }
+  
+  .auth-form.active {
+    opacity: 1;
+    visibility: visible;
+  }
+  

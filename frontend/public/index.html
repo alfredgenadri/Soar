@@ -10,34 +10,46 @@
       content="Web site created using create-react-app"
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
+    <!-- Link to the Webflow CSS for global styles if required for your MainMenuPage -->
+    <link
+      href="https://assets-global.website-files.com/5f686813c8da016a8335801e/css/rincon-lighting.webflow.6f195507e.css"
+      rel="stylesheet"
+    />
+
+    <!-- Link to any additional fonts or external styles -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+    <script>
+      WebFont.load({
+        google: {
+          families: ["Poppins:regular,500,600,700", "Poppins:200,300,regular"],
+        },
+      });
+    </script>
+
+    <!-- Optional: Include manifest.json and other default CRA setups -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>Soar</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+
+    <!-- Add jQuery (or other libraries) only if required for your MainMenuPage -->
+    <script
+      crossorigin="anonymous"
+      integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+      src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js"
+    ></script>
+
+    <!-- Add the Webflow script for the video autoplay and control if necessary -->
+   
+    
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
     -->
   </body>
 </html>

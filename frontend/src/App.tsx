@@ -1,33 +1,18 @@
 import React from 'react';
-import { MantineProvider, AppShell, createTheme } from '@mantine/core';
-import AppNavbar from './components/Navbar';
-
-const theme = createTheme({
-  primaryColor: 'blue',
-  fontFamily: 'Arial, sans-serif',
-});
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import MainMenuPage from './pages/MainMenuPage';
+import AuthPage from './pages/AuthPage';
+import ChatbotPage from './pages/ChatbotPage';
 
 function App() {
   return (
-    <MantineProvider theme={theme}>
-      <AppShell
-        padding="md"
-        navbar={{ width: 300, breakpoint: 'sm' }}
-        styles={(theme) => ({
-          main: {
-            backgroundColor: theme.primaryColor === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0],
-          },
-        })}
-      >
-        <AppShell.Navbar p="md">
-          <AppNavbar />
-        </AppShell.Navbar>
-        <AppShell.Main>
-          <h1>Welcome to Soar</h1>
-          <p>Your AI-driven mental health support platform.</p>
-        </AppShell.Main>
-      </AppShell>
-    </MantineProvider>
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainMenuPage />} /> {/* Main menu page as default */}
+        <Route path="/login" element={<AuthPage />} /> {/* Login/Register page */}
+        <Route path="/chatbot" element={<ChatbotPage />} /> {/* Chatbot page */}
+      </Routes>
+    </Router>
   );
 }
 
