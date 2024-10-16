@@ -16,7 +16,7 @@ Organized components, pages, and services directories.
 CSS files are modularized where necessary (e.g., MainMenuPage.module.css).
 
 # Directory
-
+```
 frontend/
 │
 src/
@@ -40,3 +40,4 @@ src/
 ├── App.tsx # Main app entry component
 ├── index.css # Global index styling
 └── index.tsx # React app entry point
+```
