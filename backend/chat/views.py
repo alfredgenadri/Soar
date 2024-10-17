@@ -53,7 +53,7 @@ class MessageView(APIView):
             detected_language = stt_response.data['detected_language']
         else:
             user_message = request.data.get('message')
-            detected_language = detect(user_message)
+            detected_language = detect(user_message) # need to test this part
 
         Message.objects.create(conversation=conversation, content=user_message, is_user=True)
 
