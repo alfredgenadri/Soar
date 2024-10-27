@@ -160,7 +160,7 @@ const ChatRoom = () => {
   return (
     <Container size="lg" className="chat-container">
       <Paper shadow="md" radius="lg" className="chat-paper">
-        <Title order={2} className="chat-title">Chat with Soar Assistant</Title>
+        <Title order={2} className="chat-title">Chat with Assistant</Title>
         
         <div className="messages-container">
           {messages.map((message, index) => (
@@ -225,7 +225,7 @@ const ChatRoom = () => {
           <Button 
             onClick={sendMessage}
             className="send-button"
-            leftSection={<IconSend size={20} />}
+            leftSection={<IconSend size={14} />}
           >
             Send
           </Button>
