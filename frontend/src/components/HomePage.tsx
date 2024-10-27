@@ -23,9 +23,9 @@ const HomePage = () => {
             <div className="nav-text">Resources</div>
             <div className="nav-text">Assistant</div>
           </div>
-          <a className="brand" href="#">
+          <div className="brand">
             <div className="logo">Soar</div>
-          </a>
+          </div>
           <div className="nav-right">
             <div className="nav-text">Login</div>
             <div className="nav-text">Sign Up</div>
