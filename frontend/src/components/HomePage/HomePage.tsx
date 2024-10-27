@@ -17,7 +17,7 @@ const HomePage = () => {
 
   return (
     <div>
-      <nav className="navbar">
+      {/* <nav className="navbar">
         <div className="nav-container">
           <div className="nav-left">
             <div className="nav-text">Resources</div>
@@ -31,7 +31,7 @@ const HomePage = () => {
             <div className="nav-text">Sign Up</div>
           </div>
         </div>
-      </nav>
+      </nav> */}
 
       <div className="video-section w-background-video w-background-video-atom">
         <video
