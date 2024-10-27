@@ -4,6 +4,8 @@ import AppNavbar from './components/Navbar';
 import HomePage from './components/HomePage';
 import './App.css';
 
+import ChatbotComponent from './components/Assistant';
+
 const theme = createTheme({
   primaryColor: 'blue',
   fontFamily: 'Arial, sans-serif',
@@ -11,7 +13,7 @@ const theme = createTheme({
 
 function App() {
   return (
-    <HomePage></HomePage>
+    <ChatbotComponent />
   );
 }
 

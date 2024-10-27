@@ -65,6 +65,7 @@ class MessageView(APIView):
 
         # Save Rasa response
         for response in rasa_response.json():
+            print(response)
             Message.objects.create(conversation=conversation, content=response['text'], is_user=False)
 
         # Return all messages in the conversation
