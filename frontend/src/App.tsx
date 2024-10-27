@@ -1,10 +1,10 @@
 import React from 'react';
-import { MantineProvider, AppShell, createTheme } from '@mantine/core';
-import AppNavbar from './components/Navbar';
-import HomePage from './components/HomePage';
-import './App.css';
+import { MantineProvider, AppShell, createTheme, Container} from '@mantine/core';
+import HomePage from './components/HomePage/HomePage';
+import ChatRoom from './components/ChatRoom/ChatRoom';
 
-import ChatbotComponent from './components/Assistant';
+import './App.css';
+import './components/ChatRoom/ChatRoom.css'
 
 const theme = createTheme({
   primaryColor: 'blue',
@@ -13,7 +13,9 @@ const theme = createTheme({
 
 function App() {
   return (
-    <ChatbotComponent />
+    <MantineProvider>
+    <ChatRoom></ChatRoom>
+    </MantineProvider>
   );
 }
 
