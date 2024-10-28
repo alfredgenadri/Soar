@@ -82,18 +82,17 @@ class ConversationView(APIView):
 class MessageView(APIView):
     def post(self, request):
         conversation_id = request.data.get('conversationId')
-        user_email = request.data.get('userId')
+        user_email = request.data.get('userId', 'guest')
         is_audio = request.data.get('is_audio', False)
         
         conversation = get_object_or_404(Conversation, id=conversation_id)
-
         user_message = request.data.get('message')
         
         # Save user message with proper user identification
         user_msg = Message.objects.create(
             conversation=conversation,
             content=user_message,
-            is_user=True,
+            is_user=True,  # Always true for user messages
             user_email=user_email
         )
 
