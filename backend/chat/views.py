@@ -15,23 +15,29 @@ RASA_API_URL = 'http://localhost:5005'
 
 class ConversationListView(APIView):
     def get(self, request):
-        if not request.user.is_authenticated:
-            return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+        user_email = request.GET.get('email')
+        if not user_email:
+            return Response({"error": "Email required"}, status=status.HTTP_400_BAD_REQUEST)
             
         conversations = Conversation.objects.filter(
-            user=request.user,
+            user_email=user_email,
             is_active=True
         ).order_by('-updated_at')
         
         conversation_data = []
         for conv in conversations:
-            last_message = conv.messages.order_by('-timestamp').first()
+            messages = conv.messages.all().order_by('timestamp')
             conversation_data.append({
                 'id': conv.id,
                 'title': f"Conversation {conv.id}",
-                'lastMessage': last_message.content if last_message else "",
+                'lastMessage': messages.last().content if messages.exists() else "",
                 'timestamp': conv.updated_at,
-                'messages': MessageSerializer(conv.messages.all(), many=True).data
+                'messages': [{
+                    'content': msg.content,
+                    'is_user': True if msg.user_email else False,
+                    'timestamp': msg.timestamp,
+                    'image': None
+                } for msg in messages]
             })
             
         return Response(conversation_data)

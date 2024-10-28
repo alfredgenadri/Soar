@@ -56,10 +56,24 @@ const ChatRoom = () => {
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/chat/conversations/');
-        setConversations(response.data);
+        const response = await axios.get(`http://localhost:8000/api/chat/conversations/?email=${user?.email}`);
+        
         if (response.data.length > 0) {
-          setActiveConversationId(response.data[0].id);
+          const conversationsWithParsedDates = response.data.map((conv: any) => ({
+            ...conv,
+            timestamp: new Date(conv.timestamp),
+            messages: conv.messages.map((msg: any) => ({
+              ...msg,
+              sender: msg.is_user ? 'user' : 'bot',
+              text: msg.content,
+              timestamp: new Date(msg.timestamp)
+            }))
+          }));
+          
+          setConversations(conversationsWithParsedDates);
+          setActiveConversationId(conversationsWithParsedDates[0].id);
+          setCurrentConversation(conversationsWithParsedDates[0]);
+          setMessages(conversationsWithParsedDates[0].messages);
         }
       } catch (error) {
         console.error('Error fetching conversations:', error);
@@ -68,12 +82,6 @@ const ChatRoom = () => {
 
     if (user?.email) {
       fetchConversations();
-    } else {
-      // Reset states for guest users
-      setConversations([]);
-      setActiveConversationId(null);
-      setCurrentConversation(null);
-      setMessages([]);
     }
   }, [user]);
 
@@ -330,19 +338,23 @@ const ChatRoom = () => {
                                 size="sm" 
                                 c={message.sender === 'user' ? 'blue.7' : 'green.7'}
                                 style={{
-                                  textAlign: message.sender === 'user' ? 'right' : 'left'
+                                  textAlign: 'left'
                                 }}
                               >
                                 {message.text}
                               </Text>
                               {message.image && (
-                                <Image
-                                  src={message.image}
-                                  alt="Bot response"
-                                  width={200}
-                                  height="auto"
-                                  fit="contain"
-                                />
+                                <Box style={{ width: '100%', marginTop: '8px' }}>
+                                  <Image
+                                    src={message.image}
+                                    alt="Bot response"
+                                    style={{ 
+                                      maxWidth: '100%',
+                                      height: 'auto',
+                                      borderRadius: '8px'
+                                    }}
+                                  />
+                                </Box>
                               )}
                               <Text 
                                 size="xs" 

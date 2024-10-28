@@ -20,18 +20,21 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
   useEffect(() => {
-    // Check for existing guest user in localStorage
-    const guestUser = localStorage.getItem('guestUser');
-    if (!user && !guestUser) {
-      initializeGuestUser();
-    } else if (!user && guestUser) {
-      setUser(JSON.parse(guestUser));
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+      setIsAuthenticated(true);
+    } else {
+      localStorage.removeItem('user');
+      setIsAuthenticated(false);
     }
-  }, []);
+  }, [user]);
 
   const login = async (email: string, password: string) => {
     // Implement your login logic here
@@ -54,8 +57,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
     setUser(null);
+    localStorage.removeItem('user');
   };
 
   const initializeGuestUser = () => {
