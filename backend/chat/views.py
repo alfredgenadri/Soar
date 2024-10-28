@@ -75,11 +75,21 @@ class ConversationView(APIView):
 
 class MessageView(APIView):
     def post(self, request):
-        conversation_id = request.data.get('conversationId')  # Changed from conversation_id
+        conversation_id = request.data.get('conversationId')
         user_email = request.data.get('userId')
         is_audio = request.data.get('is_audio', False)
         
         conversation = get_object_or_404(Conversation, id=conversation_id)
+
+        user_message = request.data.get('message')
+        
+        # Save user message with proper user identification
+        user_msg = Message.objects.create(
+            conversation=conversation,
+            content=user_message,
+            is_user=True,
+            user_email=user_email
+        )
 
         if is_audio:
             audio_file = request.FILES.get('audio')
@@ -93,13 +103,6 @@ class MessageView(APIView):
             detected_language = stt_response.data['detected_language']
         else:
             user_message = request.data.get('message')
-
-        # Save user message
-        user_msg = Message.objects.create(
-            conversation=conversation,
-            content=user_message,
-            is_user=True
-        )
 
         try:
             rasa_response = requests.post(f'{RASA_API_URL}/webhooks/rest/webhook', json={

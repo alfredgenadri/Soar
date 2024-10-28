@@ -1,22 +1,24 @@
 import { useState, useRef, useEffect } from 'react';
-import { TextInput, Button, Paper, Text, Container, Title, Flex, Loader, ActionIcon, Image, ScrollArea, Stack, Grid } from '@mantine/core';
+import { TextInput, Button, Paper, Text, Container, Title, Flex, Loader, ActionIcon, Image, ScrollArea, Stack, Grid, Box } from '@mantine/core';
 import { IconMicrophone, IconSend, IconPlus } from '@tabler/icons-react';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import { ConversationList } from './ConversationList';
+
 
 interface Message {
   sender: 'user' | 'bot';
   text: string;
   timestamp: Date;
   image?: string;
+  user_email?: string;
 }
 
 // Helper function to convert backend message format to frontend format
 const convertBackendMessage = (message: any): Message => {
   return {
-    sender: message.is_user ? 'user' : 'bot',
-    text: message.content || message.text || '',  // Handle both formats
+    sender: message.user_email ? 'user' : 'bot',
+    text: message.content || message.text || '',
     timestamp: new Date(message.timestamp),
     image: message.image
   };
@@ -45,6 +47,8 @@ const ChatRoom = () => {
   const [streamingMessage, setStreamingMessage] = useState<string>('');
   const [isStreaming, setIsStreaming] = useState(false);
 
+
+  console.log(messages);
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -172,34 +176,35 @@ const ChatRoom = () => {
     }
   };
 
-  const streamResponse = (fullText: string) => {
-    setIsStreaming(true);
-    let currentIndex = 0;
-    
-    const stream = () => {
-      if (currentIndex < fullText.length) {
-        setStreamingMessage(prev => prev + fullText[currentIndex]);
-        currentIndex++;
-        setTimeout(stream, 30); // Adjust speed as needed
-      } else {
-        setIsStreaming(false);
-        setStreamingMessage('');
-      }
-    };
-    
-    stream();
+  const streamResponse = async (fullText: string): Promise<void> => {
+    return new Promise((resolve) => {
+      setIsStreaming(true);
+      let currentIndex = 0;
+      const streamInterval = setInterval(() => {
+        if (currentIndex < fullText.length) {
+          setStreamingMessage(prev => prev + fullText[currentIndex]);
+          currentIndex++;
+        } else {
+          clearInterval(streamInterval);
+          setIsStreaming(false);
+          setStreamingMessage('');
+          resolve();
+        }
+      }, 30);
+    });
   };
 
   const sendMessage = async () => {
     const trimmedMessage = userMessage.trim();
     if (trimmedMessage === '' || !currentConversation) return;
 
-    const userMsg: Message = { 
+    const userMsg: Message = {
       sender: 'user',
       text: trimmedMessage,
-      timestamp: new Date()
+      timestamp: new Date(),
+      user_email: user?.email
     };
-    
+
     setMessages(prev => [...prev, userMsg]);
     setUserMessage('');
 
@@ -208,11 +213,14 @@ const ChatRoom = () => {
         conversationId: currentConversation.id,
         message: trimmedMessage,
         userId: user?.email,
-        is_audio: false
+        is_audio: false,
+        is_user: true,
+        user_email: user?.email
       });
 
-      setConversations(prev => prev.map(conv => 
-        conv.id === currentConversation.id 
+      // Update conversations with user message
+      setConversations(prev => prev.map(conv =>
+        conv.id === currentConversation.id
           ? {
               ...conv,
               lastMessage: trimmedMessage,
@@ -223,36 +231,28 @@ const ChatRoom = () => {
       ));
 
       const botResponses = response.data;
-      for (let i = 0; i < botResponses.length; i++) {
+      for (const botResponse of botResponses) {
         const botMessage = {
           sender: 'bot' as const,
-          text: botResponses[i].text || botResponses[i].content || '',
+          text: botResponse.text || botResponse.content || '',
           timestamp: new Date(),
-          image: botResponses[i].image
+          image: botResponse.image
         };
 
-        // Stream each bot message
-        await new Promise<void>(resolve => {
-          streamResponse(botMessage.text);
-          
-          const checkStreaming = setInterval(() => {
-            if (!isStreaming) {
-              clearInterval(checkStreaming);
-              setMessages(prev => [...prev, botMessage]);
-              setConversations(prev => prev.map(conv =>
-                conv.id === currentConversation.id
-                  ? {
-                      ...conv,
-                      lastMessage: botMessage.text,
-                      timestamp: botMessage.timestamp,
-                      messages: [...(conv.messages || []), botMessage]
-                    }
-                  : conv
-              ));
-              resolve();
-            }
-          }, 100);
-        });
+        // Wait for streaming to complete before adding message
+        await streamResponse(botMessage.text);
+        
+        setMessages(prev => [...prev, botMessage]);
+        setConversations(prev => prev.map(conv =>
+          conv.id === currentConversation.id
+            ? {
+                ...conv,
+                lastMessage: botMessage.text,
+                timestamp: botMessage.timestamp,
+                messages: [...(conv.messages || []), botMessage]
+              }
+            : conv
+        ));
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -296,6 +296,8 @@ const ChatRoom = () => {
               </Flex>
             )}
 
+        
+
             {currentConversation && (
               <>
                 <ScrollArea style={{ height: 'calc(100vh - 250px)', marginBottom: '1rem' }}>
@@ -303,44 +305,87 @@ const ChatRoom = () => {
                     {messages.map((message, index) => (
                       <Flex
                         key={index}
-                        align="flex-start"
+                        direction="row"
                         justify={message.sender === 'user' ? 'flex-end' : 'flex-start'}
-                        style={{ width: '100%' }}
+                        w="100%"
                       >
-                        <Paper
-                          shadow="sm"
-                          p="md"
+                        <Box
                           style={{
                             maxWidth: '70%',
-                            alignSelf: message.sender === 'user' ? 'flex-end' : 'flex-start',
-                            backgroundColor: message.sender === 'user' ? '#e3f2fd' : '#f1f8e9',
-                            borderRadius: message.sender === 'user' ? '20px 20px 5px 20px' : '20px 20px 20px 5px',
+                            width: 'auto',
+                            marginLeft: message.sender === 'user' ? 'auto' : '0',
+                            marginRight: message.sender === 'user' ? '0' : 'auto'
                           }}
                         >
-                          <Stack gap="xs">
-                            <Text 
-                              size="sm" 
-                              c={message.sender === 'user' ? 'blue.7' : 'green.7'}
-                              style={{ whiteSpace: 'pre-wrap' }}
-                            >
-                              {message.text}
-                            </Text>
-                            {message.image && (
-                              <Image
-                                src={message.image}
-                                alt="Bot response"
-                                width={200}
-                                height="auto"
-                                fit="contain"
-                              />
-                            )}
-                            <Text size="xs" c="dimmed" ta={message.sender === 'user' ? 'right' : 'left'}>
-                              {formatTime(message.timestamp)}
-                            </Text>
-                          </Stack>
-                        </Paper>
+                          <Paper
+                            shadow="sm"
+                            p="md"
+                            style={{
+                              backgroundColor: message.sender === 'user' ? '#e3f2fd' : '#f1f8e9',
+                              borderRadius: message.sender === 'user' ? '20px 20px 5px 20px' : '20px 20px 20px 5px',
+                            }}
+                          >
+                            <Stack gap="xs">
+                              <Text 
+                                size="sm" 
+                                c={message.sender === 'user' ? 'blue.7' : 'green.7'}
+                                style={{
+                                  textAlign: message.sender === 'user' ? 'right' : 'left'
+                                }}
+                              >
+                                {message.text}
+                              </Text>
+                              {message.image && (
+                                <Image
+                                  src={message.image}
+                                  alt="Bot response"
+                                  width={200}
+                                  height="auto"
+                                  fit="contain"
+                                />
+                              )}
+                              <Text 
+                                size="xs" 
+                                c="dimmed" 
+                                style={{
+                                  textAlign: message.sender === 'user' ? 'right' : 'left'
+                                }}
+                              >
+                                {formatTime(message.timestamp)}
+                              </Text>
+                            </Stack>
+                          </Paper>
+                        </Box>
                       </Flex>
                     ))}
+                    {isStreaming && (
+                      <Flex
+                        direction="row"
+                        justify="flex-start"
+                        w="100%"
+                      >
+                        <Box
+                          style={{
+                            maxWidth: '70%',
+                            width: 'auto',
+                            marginRight: 'auto'
+                          }}
+                        >
+                          <Paper
+                            shadow="sm"
+                            p="md"
+                            style={{
+                              backgroundColor: '#f1f8e9',
+                              borderRadius: '20px 20px 20px 5px'
+                            }}
+                          >
+                            <Text size="sm" c="green.7">
+                              {streamingMessage}
+                            </Text>
+                          </Paper>
+                        </Box>
+                      </Flex>
+                    )}
                     <div ref={messagesEndRef} />
                   </Stack>
                 </ScrollArea>
