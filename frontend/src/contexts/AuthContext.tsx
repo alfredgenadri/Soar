@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Avatar } from '@mantine/core';
 
 interface User {
   name: string;
   email: string;
-  image: string;  // Changed from typeof Avatar to string
+  image: string;
+  isGuest?: boolean;
 }
 
 interface AuthContextType {
@@ -13,6 +14,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  initializeGuestUser: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,6 +22,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // Check for existing guest user in localStorage
+    const guestUser = localStorage.getItem('guestUser');
+    if (!user && !guestUser) {
+      initializeGuestUser();
+    } else if (!user && guestUser) {
+      setUser(JSON.parse(guestUser));
+    }
+  }, []);
 
   const login = async (email: string, password: string) => {
     // Implement your login logic here
@@ -46,8 +58,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
+  const initializeGuestUser = () => {
+    const guestUser = {
+      name: 'Guest',
+      email: `guest_${Date.now()}@example.com`,
+      image: 'https://example.com/default-avatar.png',
+      isGuest: true
+    };
+    setUser(guestUser);
+    localStorage.setItem('guestUser', JSON.stringify(guestUser));
+  };
+
+  // Add initializeGuestUser to the context value
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, signup, logout }}>
+    <AuthContext.Provider value={{ 
+      isAuthenticated, 
+      user, 
+      login, 
+      signup, 
+      logout,
+      initializeGuestUser 
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -13,6 +13,29 @@ import tempfile
 RASA_API_URL = 'http://localhost:5005'
 
 
+class ConversationListView(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        conversations = Conversation.objects.filter(
+            user=request.user,
+            is_active=True
+        ).order_by('-updated_at')
+        
+        conversation_data = []
+        for conv in conversations:
+            last_message = conv.messages.order_by('-timestamp').first()
+            conversation_data.append({
+                'id': conv.id,
+                'title': f"Conversation {conv.id}",
+                'lastMessage': last_message.content if last_message else "",
+                'timestamp': conv.updated_at,
+                'messages': MessageSerializer(conv.messages.all(), many=True).data
+            })
+            
+        return Response(conversation_data)
+    
 class FeedbackCreateView(generics.CreateAPIView):
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
@@ -31,15 +54,32 @@ class ConversationView(APIView):
         serializer = ConversationSerializer(conversation)
         return Response(serializer.data)
 
-class MessageView(APIView):
     def post(self, request):
         user = request.user if request.user.is_authenticated else None
-        conversation = get_object_or_404(Conversation, id=request.data.get('conversation_id'))
+        user_email = request.data.get('userId')
         
-        if user and conversation.user != user:
-            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        session_id = str(uuid.uuid4())
+        conversation = Conversation.objects.create(
+            user=user,
+            user_email=user_email,
+            session_id=session_id
+        )
+        
+        return Response({
+            'id': conversation.id,
+            'title': f"Conversation {conversation.id}",
+            'lastMessage': "",
+            'timestamp': conversation.created_at,
+            'messages': []
+        })
 
+class MessageView(APIView):
+    def post(self, request):
+        conversation_id = request.data.get('conversationId')  # Changed from conversation_id
+        user_email = request.data.get('userId')
         is_audio = request.data.get('is_audio', False)
+        
+        conversation = get_object_or_404(Conversation, id=conversation_id)
 
         if is_audio:
             audio_file = request.FILES.get('audio')
@@ -53,25 +93,40 @@ class MessageView(APIView):
             detected_language = stt_response.data['detected_language']
         else:
             user_message = request.data.get('message')
-            detected_language = detect(user_message) # need to test this part
 
-        Message.objects.create(conversation=conversation, content=user_message, is_user=True)
+        # Save user message
+        user_msg = Message.objects.create(
+            conversation=conversation,
+            content=user_message,
+            is_user=True
+        )
 
-        # Send message to Rasa
-        rasa_response = requests.post(f'{RASA_API_URL}/webhooks/rest/webhook', json={
-            'sender': conversation.session_id,
-            'message': user_message
-        })
+        try:
+            rasa_response = requests.post(f'{RASA_API_URL}/webhooks/rest/webhook', json={
+                'sender': conversation.session_id,
+                'message': user_message
+            })
+            bot_responses = rasa_response.json()
+        except requests.exceptions.RequestException:
+            bot_responses = [{
+                'text': "I apologize, but I'm temporarily unavailable. Please try again later."
+            }]
 
-        # Save Rasa response
-        for response in rasa_response.json():
-            print(response)
-            Message.objects.create(conversation=conversation, content=response['text'], is_user=False)
-
-        # Return all messages in the conversation
-        messages = Message.objects.filter(conversation=conversation).order_by('timestamp')
-        serializer = MessageSerializer(messages, many=True)
-        return Response({"messages": serializer.data, "detected_language": detected_language})
+        # Save bot responses
+        saved_responses = []
+        for response in bot_responses:
+            bot_msg = Message.objects.create(
+                conversation=conversation,
+                content=response.get('text', ''),
+                is_user=False
+            )
+            saved_responses.append({
+                'content': bot_msg.content,
+                'timestamp': bot_msg.timestamp,
+                'is_user': False
+            })
+        
+        return Response(saved_responses)
     
 class SpeechToTextUtils:
     _instance = None
