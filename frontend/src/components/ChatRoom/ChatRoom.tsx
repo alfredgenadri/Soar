@@ -64,9 +64,10 @@ const ChatRoom = () => {
             timestamp: new Date(conv.timestamp),
             messages: conv.messages.map((msg: any) => ({
               ...msg,
-              sender: msg.is_user ? 'user' : 'bot',
-              text: msg.content,
-              timestamp: new Date(msg.timestamp)
+              sender: msg.user_email ? 'user' : 'bot',
+              text: msg.content || msg.text || '',
+              timestamp: new Date(msg.timestamp),
+              user_email: msg.user_email
             }))
           }));
           

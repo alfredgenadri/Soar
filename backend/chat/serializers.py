@@ -10,7 +10,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ['id', 'content', 'is_user', 'timestamp']
+        fields = ['id', 'content', 'is_user', 'timestamp', 'user_email']
 
 class ConversationSerializer(serializers.ModelSerializer):
     messages = MessageSerializer(many=True, read_only=True)

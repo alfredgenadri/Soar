@@ -34,7 +34,7 @@ class ConversationListView(APIView):
                 'timestamp': conv.updated_at,
                 'messages': [{
                     'content': msg.content,
-                    'is_user': True if msg.user_email else False,
+                    'user_email': msg.user_email,
                     'timestamp': msg.timestamp,
                     'image': None
                 } for msg in messages]
