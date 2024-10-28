@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Avatar } from '@mantine/core';
+import axios from 'axios';
 
 interface User {
   name: string;
@@ -37,23 +38,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const login = async (email: string, password: string) => {
-    // Implement your login logic here
-    setIsAuthenticated(true);
-    setUser({ 
-      name: 'Test User', 
-      email,
-      image: 'https://example.com/default-avatar.png'  // Use URL instead of Avatar component
-    });
+    try {
+      const response = await axios.post('http://localhost:8000/api/users/login/', {
+        username: email,
+        password: password
+      });
+
+      if (response.data.access) {
+        const userData = {
+          name: email.split('@')[0],
+          email: email,
+          image: 'https://example.com/default-avatar.png'
+        };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', response.data.access);
+        setIsAuthenticated(true);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   };
 
   const signup = async (name: string, email: string, password: string) => {
-    // Implement your signup logic here
-    setIsAuthenticated(true);
-    setUser({ 
-      name, 
-      email,
-      image: 'https://example.com/default-avatar.png' // Default avatar
-    });
+    try {
+      const response = await axios.post('http://localhost:8000/api/users/register/', {
+        username: email,
+        email: email,
+        password: password
+      });
+
+      if (response.data.user) {
+        const userData = {
+          name: name,
+          email: response.data.user.email,
+          image: 'https://example.com/default-avatar.png'
+        };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', response.data.access);
+        setIsAuthenticated(true);
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
+    }
   };
 
   const logout = () => {

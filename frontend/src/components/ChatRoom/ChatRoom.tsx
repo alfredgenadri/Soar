@@ -210,7 +210,7 @@ const ChatRoom = () => {
       sender: 'user',
       text: trimmedMessage,
       timestamp: new Date(),
-      user_email: user?.email
+      user_email: user?.email || 'guest'
     };
 
     setMessages(prev => [...prev, userMsg]);
@@ -220,10 +220,10 @@ const ChatRoom = () => {
       const response = await axios.post('http://localhost:8000/api/chat/message/', {
         conversationId: currentConversation.id,
         message: trimmedMessage,
-        userId: user?.email,
+        userId: user?.email || 'guest',
         is_audio: false,
         is_user: true,
-        user_email: user?.email
+        user_email: user?.email || 'guest'
       });
 
       // Update conversations with user message

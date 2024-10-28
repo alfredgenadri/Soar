@@ -1,6 +1,7 @@
 import { Modal, TextInput, Button, Group } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useAuth } from '../../contexts/AuthContext';
+import { notifications } from '@mantine/notifications';
 
 interface LoginModalProps {
   opened: boolean;
@@ -23,10 +24,19 @@ export const LoginModal: React.FC<LoginModalProps> = ({ opened, onClose }) => {
   const handleSubmit = async (values: { email: string; password: string }) => {
     try {
       await login(values.email, values.password);
+      notifications.show({
+        title: 'Success',
+        message: 'Logged in successfully',
+        color: 'green'
+      });
       onClose();
       form.reset();
-    } catch (error) {
-      console.error('Login failed:', error);
+    } catch (error: any) {
+      notifications.show({
+        title: 'Error',
+        message: error.response?.data?.error || 'Failed to login',
+        color: 'red'
+      });
     }
   };
 

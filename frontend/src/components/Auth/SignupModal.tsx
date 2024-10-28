@@ -1,6 +1,7 @@
 import { Modal, TextInput, Button, Group } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useAuth } from '../../contexts/AuthContext';
+import { notifications } from '@mantine/notifications';
 
 interface SignupModalProps {
   opened: boolean;
@@ -28,10 +29,19 @@ export const SignupModal: React.FC<SignupModalProps> = ({ opened, onClose }) => 
   const handleSubmit = async (values: { name: string; email: string; password: string }) => {
     try {
       await signup(values.name, values.email, values.password);
+      notifications.show({
+        title: 'Success',
+        message: 'Account created successfully',
+        color: 'green'
+      });
       onClose();
       form.reset();
-    } catch (error) {
-      console.error('Signup failed:', error);
+    } catch (error: any) {
+      notifications.show({
+        title: 'Error',
+        message: error.response?.data?.message || 'Failed to create account',
+        color: 'red'
+      });
     }
   };
 
