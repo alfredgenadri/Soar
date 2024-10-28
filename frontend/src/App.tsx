@@ -12,10 +12,12 @@ import { Header } from './components/Header/Header';
 
 function App() {
   return (
-    <MantineProvider>
-      <Header></Header>
-      <ChatRoom></ChatRoom>
-    </MantineProvider>
+    <AuthProvider>
+      <MantineProvider>
+        <Header></Header>
+        <ChatRoom></ChatRoom>
+      </MantineProvider>
+    </AuthProvider>
   );
 }
 

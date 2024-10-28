@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState } from 'react';
+import { Avatar } from '@mantine/core';
 
 interface User {
   name: string;
   email: string;
+  image: string;  // Changed from typeof Avatar to string
 }
 
 interface AuthContextType {
@@ -22,13 +24,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     // Implement your login logic here
     setIsAuthenticated(true);
-    setUser({ name: 'Test User', email });
+    setUser({ 
+      name: 'Test User', 
+      email,
+      image: 'https://example.com/default-avatar.png'  // Use URL instead of Avatar component
+    });
   };
 
   const signup = async (name: string, email: string, password: string) => {
     // Implement your signup logic here
     setIsAuthenticated(true);
-    setUser({ name, email });
+    setUser({ 
+      name, 
+      email,
+      image: 'https://example.com/default-avatar.png' // Default avatar
+    });
   };
 
   const logout = () => {
