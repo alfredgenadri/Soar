@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { TextInput, Button, Paper, Text, Container, Title, Flex, Loader, ActionIcon, Image, ScrollArea, Stack, Grid } from '@mantine/core';
-import { IconMicrophone, IconSend } from '@tabler/icons-react';
+import { IconMicrophone, IconSend, IconPlus } from '@tabler/icons-react';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import { ConversationList } from './ConversationList';
@@ -16,9 +16,9 @@ interface Message {
 const convertBackendMessage = (message: any): Message => {
   return {
     sender: message.is_user ? 'user' : 'bot',
-    text: message.content,
+    text: message.content || message.text || '',  // Handle both formats
     timestamp: new Date(message.timestamp),
-    image: message.image || undefined
+    image: message.image
   };
 };
 
@@ -42,6 +42,8 @@ const ChatRoom = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [streamingMessage, setStreamingMessage] = useState<string>('');
+  const [isStreaming, setIsStreaming] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -62,28 +64,14 @@ const ChatRoom = () => {
 
     if (user?.email) {
       fetchConversations();
+    } else {
+      // Reset states for guest users
+      setConversations([]);
+      setActiveConversationId(null);
+      setCurrentConversation(null);
+      setMessages([]);
     }
   }, [user]);
-
-  useEffect(() => {
-    // Initialize or fetch existing conversation
-    const initializeConversation = async () => {
-        try {
-            const response = await axios.post('http://localhost:8000/api/chat/conversation/', {
-                userId: user?.email || `guest_${Date.now()}@example.com` // Use timestamp for unique guest IDs
-            });
-            
-            setCurrentConversation(response.data);
-            if (response.data.messages) {
-                setMessages(response.data.messages);
-            }
-        } catch (error) {
-            console.error('Error initializing conversation:', error);
-        }
-    };
-
-    initializeConversation();
-}, [user]);
 
   useEffect(() => {
     const fetchConversationMessages = async () => {
@@ -91,9 +79,11 @@ const ChatRoom = () => {
       
       try {
         const selectedConversation = conversations.find(conv => conv.id === activeConversationId);
-        if (selectedConversation && selectedConversation.messages) {
+        if (selectedConversation) {
           setCurrentConversation(selectedConversation);
-          const convertedMessages = selectedConversation.messages.map(msg => convertBackendMessage(msg));
+          // Ensure messages exist and convert them
+          const messages = selectedConversation.messages || [];
+          const convertedMessages = messages.map(msg => convertBackendMessage(msg));
           setMessages(convertedMessages);
         }
       } catch (error) {
@@ -182,63 +172,91 @@ const ChatRoom = () => {
     }
   };
 
-  const sendMessage = async () => {
-    if (userMessage.trim() === '' || !currentConversation) return;
+  const streamResponse = (fullText: string) => {
+    setIsStreaming(true);
+    let currentIndex = 0;
+    
+    const stream = () => {
+      if (currentIndex < fullText.length) {
+        setStreamingMessage(prev => prev + fullText[currentIndex]);
+        currentIndex++;
+        setTimeout(stream, 30); // Adjust speed as needed
+      } else {
+        setIsStreaming(false);
+        setStreamingMessage('');
+      }
+    };
+    
+    stream();
+  };
 
-    const timestamp = new Date();
-    const newMessage: Message = { sender: 'user' as const, text: userMessage, timestamp };
-    setMessages(prev => [...prev, newMessage]);
+  const sendMessage = async () => {
+    const trimmedMessage = userMessage.trim();
+    if (trimmedMessage === '' || !currentConversation) return;
+
+    const userMsg: Message = { 
+      sender: 'user',
+      text: trimmedMessage,
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, userMsg]);
+    setUserMessage('');
 
     try {
-        const response = await axios.post('http://localhost:8000/api/chat/message/', {
-            conversationId: currentConversation.id,
-            message: userMessage,
-            userId: user?.email,
-            is_audio: false
+      const response = await axios.post('http://localhost:8000/api/chat/message/', {
+        conversationId: currentConversation.id,
+        message: trimmedMessage,
+        userId: user?.email,
+        is_audio: false
+      });
+
+      setConversations(prev => prev.map(conv => 
+        conv.id === currentConversation.id 
+          ? {
+              ...conv,
+              lastMessage: trimmedMessage,
+              timestamp: new Date(),
+              messages: [...(conv.messages || []), userMsg]
+            }
+          : conv
+      ));
+
+      const botResponses = response.data;
+      for (let i = 0; i < botResponses.length; i++) {
+        const botMessage = {
+          sender: 'bot' as const,
+          text: botResponses[i].text || botResponses[i].content || '',
+          timestamp: new Date(),
+          image: botResponses[i].image
+        };
+
+        // Stream each bot message
+        await new Promise<void>(resolve => {
+          streamResponse(botMessage.text);
+          
+          const checkStreaming = setInterval(() => {
+            if (!isStreaming) {
+              clearInterval(checkStreaming);
+              setMessages(prev => [...prev, botMessage]);
+              setConversations(prev => prev.map(conv =>
+                conv.id === currentConversation.id
+                  ? {
+                      ...conv,
+                      lastMessage: botMessage.text,
+                      timestamp: botMessage.timestamp,
+                      messages: [...(conv.messages || []), botMessage]
+                    }
+                  : conv
+              ));
+              resolve();
+            }
+          }, 100);
         });
-
-        // Update conversations list with new message
-        setConversations(prev => prev.map(conv => 
-            conv.id === currentConversation.id 
-                ? {
-                    ...conv,
-                    lastMessage: userMessage,
-                    timestamp: new Date(),
-                    messages: [...(conv.messages || []), newMessage]
-                  }
-                : conv
-        ));
-
-        const botResponses = response.data;
-        for (let i = 0; i < botResponses.length; i++) {
-            setTimeout(() => {
-                const botMessage = {
-                    sender: 'bot' as const,
-                    text: botResponses[i].text || botResponses[i].content || '',  // Handle both response formats
-                    timestamp: new Date(),
-                    image: botResponses[i].image
-                };
-
-                setMessages(prev => [...prev, botMessage]);
-                
-                // Update conversations with bot response
-                setConversations(prev => prev.map(conv =>
-                    conv.id === currentConversation.id
-                        ? {
-                            ...conv,
-                            lastMessage: botMessage.text,
-                            timestamp: botMessage.timestamp,
-                            messages: [...(conv.messages || []), botMessage]
-                          }
-                        : conv
-                ));
-            }, i * 500);
-        }
+      }
     } catch (error) {
-        console.error('Error sending message:', error);
+      console.error('Error sending message:', error);
     }
-
-    setUserMessage('');
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -269,69 +287,87 @@ const ChatRoom = () => {
               Chat with Assistant
             </Title>
 
-            <ScrollArea style={{ height: 'calc(100vh - 250px)', marginBottom: '1rem' }}>
-              <Stack gap="md" p="md">
-                {messages.map((message, index) => (
-                  <Flex
-                    key={index}
-                    align="flex-start"
-                    justify={message.sender === 'user' ? 'flex-end' : 'flex-start'}
-                    style={{ width: '100%' }}
-                  >
-                    <Paper
-                      shadow="sm"
-                      p="md"
-                      style={{
-                        maxWidth: '70%',
-                        backgroundColor: message.sender === 'user' ? '#e3f2fd' : '#f1f8e9',
-                        borderRadius: message.sender === 'user' ? '20px 20px 5px 20px' : '20px 20px 20px 5px',
-                      }}
-                    >
-                      <Stack gap="xs">
-                        <Text size="sm" c={message.sender === 'user' ? 'blue.7' : 'green.7'}>
-                          {message.text || 'Empty message'}
-                        </Text>
-                        {message.image && (
-                          <Image
-                            src={message.image}
-                            alt="Bot response"
-                            width={200}
-                            height="auto"
-                            fit="contain"
-                          />
-                        )}
-                        <Text size="xs" c="dimmed" ta={message.sender === 'user' ? 'right' : 'left'}>
-                          {formatTime(message.timestamp)}
-                        </Text>
-                      </Stack>
-                    </Paper>
-                  </Flex>
-                ))}
-                <div ref={messagesEndRef} />
-              </Stack>
-            </ScrollArea>
+            {!currentConversation && (
+              <Flex direction="column" align="center" justify="center" style={{ minHeight: '60vh' }}>
+                <Text size="xl" mb="md">Start a new conversation</Text>
+                <Button onClick={handleNewConversation} leftSection={<IconPlus size={20} />}>
+                  New Chat
+                </Button>
+              </Flex>
+            )}
 
-            <Flex align="center" gap="sm">
-              <TextInput
-                value={userMessage}
-                onChange={(e) => setUserMessage(e.currentTarget.value)}
-                placeholder="Type your message..."
-                onKeyDown={handleKeyDown}
-                style={{ flex: 1 }}
-              />
-              <ActionIcon
-                variant="outline"
-                onMouseDown={startRecording}
-                onMouseUp={stopRecording}
-                size="lg"
-                disabled={isProcessing}
-              >
-                {isProcessing ? <Loader size="sm" /> : <IconMicrophone size={20} />}
-              </ActionIcon>
-              <Button onClick={sendMessage} leftSection={<IconSend size={18} />}>
-                Send
-              </Button>
-            </Flex>
+            {currentConversation && (
+              <>
+                <ScrollArea style={{ height: 'calc(100vh - 250px)', marginBottom: '1rem' }}>
+                  <Stack gap="md" p="md">
+                    {messages.map((message, index) => (
+                      <Flex
+                        key={index}
+                        align="flex-start"
+                        justify={message.sender === 'user' ? 'flex-end' : 'flex-start'}
+                        style={{ width: '100%' }}
+                      >
+                        <Paper
+                          shadow="sm"
+                          p="md"
+                          style={{
+                            maxWidth: '70%',
+                            alignSelf: message.sender === 'user' ? 'flex-end' : 'flex-start',
+                            backgroundColor: message.sender === 'user' ? '#e3f2fd' : '#f1f8e9',
+                            borderRadius: message.sender === 'user' ? '20px 20px 5px 20px' : '20px 20px 20px 5px',
+                          }}
+                        >
+                          <Stack gap="xs">
+                            <Text 
+                              size="sm" 
+                              c={message.sender === 'user' ? 'blue.7' : 'green.7'}
+                              style={{ whiteSpace: 'pre-wrap' }}
+                            >
+                              {message.text}
+                            </Text>
+                            {message.image && (
+                              <Image
+                                src={message.image}
+                                alt="Bot response"
+                                width={200}
+                                height="auto"
+                                fit="contain"
+                              />
+                            )}
+                            <Text size="xs" c="dimmed" ta={message.sender === 'user' ? 'right' : 'left'}>
+                              {formatTime(message.timestamp)}
+                            </Text>
+                          </Stack>
+                        </Paper>
+                      </Flex>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </Stack>
+                </ScrollArea>
+
+                <Flex align="center" gap="sm">
+                  <TextInput
+                    value={userMessage}
+                    onChange={(e) => setUserMessage(e.currentTarget.value)}
+                    placeholder="Type your message..."
+                    onKeyDown={handleKeyDown}
+                    style={{ flex: 1 }}
+                  />
+                  <ActionIcon
+                    variant="outline"
+                    onMouseDown={startRecording}
+                    onMouseUp={stopRecording}
+                    size="lg"
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? <Loader size="sm" /> : <IconMicrophone size={20} />}
+                  </ActionIcon>
+                  <Button onClick={sendMessage} leftSection={<IconSend size={18} />}>
+                    Send
+                  </Button>
+                </Flex>
+              </>
+            )}
           </Paper>
         </Grid.Col>
       </Grid>
