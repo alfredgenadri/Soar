@@ -4,6 +4,7 @@ import { IconMicrophone, IconSend, IconPlus } from '@tabler/icons-react';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import { ConversationList } from './ConversationList';
+import { notifications } from '@mantine/notifications';
 
 
 interface Message {
@@ -118,58 +119,53 @@ const ChatRoom = () => {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
-      recorder.ondataavailable = (event) => {
+
+      mediaRecorder.ondataavailable = (event) => {
         audioChunksRef.current.push(event.data);
       };
 
-      recorder.start();
-      mediaRecorderRef.current = recorder;
-      setIsRecording(true); // Set recording state
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        setIsProcessing(true);
+        
+        const formData = new FormData();
+        formData.append('audio', audioBlob);
+
+        try {
+          const response = await axios.post('http://localhost:8000/api/chat/speech-to-text/', formData);
+          if (response.data.text) {
+            setUserMessage(response.data.text);
+          }
+        } catch (error) {
+          notifications.show({
+            title: 'Error',
+            message: 'Failed to convert speech to text',
+            color: 'red',
+          });
+        } finally {
+          setIsProcessing(false);
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
     } catch (error) {
-      console.error('Error accessing microphone:', error);
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to access microphone',
+        color: 'red',
+      });
     }
   };
 
-  const stopRecording = async () => {
-    if (!mediaRecorderRef.current || !isRecording) return;
-
-    setIsRecording(false); // Stop recording
-    setIsProcessing(true); // Start processing and disable button
-
-    mediaRecorderRef.current.onstop = async () => {
-      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-      const stream = mediaRecorderRef.current!.stream;
-      stream.getTracks().forEach((track) => track.stop());
-
-      try {
-        await sendAudioToBackend(audioBlob);
-      } finally {
-        setIsProcessing(false); // Enable button after transcription
-      }
-    };
-
-    mediaRecorderRef.current.stop();
-  };
-
-  const sendAudioToBackend = async (audioBlob: Blob) => {
-    try {
-      const formData = new FormData();
-      formData.append('audio', audioBlob);
-
-      const response = await axios.post('http://localhost:8000/api/chat/speech-to-text/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      if (response.data.text) {
-        setUserMessage(response.data.text); // Display transcription in input field
-      }
-    } catch (error) {
-      console.error('Error converting speech to text:', error);
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
     }
   };
 
@@ -410,16 +406,16 @@ const ChatRoom = () => {
                     placeholder="Type your message..."
                     onKeyDown={handleKeyDown}
                     style={{ flex: 1 }}
+                    rightSection={
+                      <ActionIcon 
+                        onClick={isRecording ? stopRecording : startRecording}
+                        variant="subtle"
+                        loading={isProcessing}
+                      >
+                        {isProcessing ? <Loader size="sm" /> : <IconMicrophone color={isRecording ? 'red' : undefined} />}
+                      </ActionIcon>
+                    }
                   />
-                  <ActionIcon
-                    variant="outline"
-                    onMouseDown={startRecording}
-                    onMouseUp={stopRecording}
-                    size="lg"
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? <Loader size="sm" /> : <IconMicrophone size={20} />}
-                  </ActionIcon>
                   <Button onClick={sendMessage} leftSection={<IconSend size={18} />}>
                     Send
                   </Button>
