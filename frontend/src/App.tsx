@@ -7,20 +7,23 @@ import HomePage from './components/HomePage/HomePage';
 import ChatRoom from './components/ChatRoom/ChatRoom';
 import { Header } from './components/Header/Header';
 import { Resources } from './components/Resources/Resources';
+import { LanguageProvider } from './contexts/LanguageContext';
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <MantineProvider>
-          <Header />
-          <Routes>
-            <Route path="/chat" element={<ChatRoom />} />
-            <Route path="/resources" element={<Resources />} />
-          </Routes>
-        </MantineProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <LanguageProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <MantineProvider>
+            <Header />
+            <Routes>
+              <Route path="/chat" element={<ChatRoom />} />
+              <Route path="/resources" element={<Resources />} />
+            </Routes>
+          </MantineProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </LanguageProvider>
   );
 }
 

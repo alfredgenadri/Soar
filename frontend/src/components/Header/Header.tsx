@@ -12,6 +12,7 @@ import {
   rem,
   Button,
   useMantineTheme,
+  SegmentedControl,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
@@ -26,6 +27,7 @@ import { LoginModal } from '../Auth/LoginModal';
 import { SignupModal } from '../Auth/SignupModal';
 import { useAuth } from '../../contexts/AuthContext';
 import { FeedbackModal } from '../Feedback/FeedbackModal';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 import classes from './Header.module.css';
 
@@ -40,6 +42,9 @@ export function Header() {
   const [feedbackModalOpened, setFeedbackModalOpened] = useState(false);
   
   const { isAuthenticated, user, logout } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
+
+  const tabs = [t('header.resources'), t('header.assistant'), t('header.feedback')];
 
   const items = tabs.map((tab) => (
     <Tabs.Tab 
@@ -101,20 +106,20 @@ export function Header() {
                 </UnstyledButton>
               </Menu.Target>
               <Menu.Dropdown>
-                <Menu.Label>Settings</Menu.Label>
+                <Menu.Label>{t('header.account.settings')}</Menu.Label>
                 <Menu.Item
                   leftSection={
                     <IconSettings style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
                   }
                 >
-                  Account settings
+                  {t('header.account.profile')}
                 </Menu.Item>
                 <Menu.Item
                   leftSection={
                     <IconSwitchHorizontal style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
                   }
                 >
-                  Change account
+                  {t('header.account.settings')}
                 </Menu.Item>
                 <Menu.Item
                   leftSection={
@@ -122,7 +127,7 @@ export function Header() {
                   }
                   onClick={logout}
                 >
-                  Logout
+                  {t('header.account.logout')}
                 </Menu.Item>
 
                 <Menu.Divider />
@@ -132,18 +137,26 @@ export function Header() {
                   color="red"
                   leftSection={<IconTrash style={{ width: rem(16), height: rem(16) }} stroke={1.5} />}
                 >
-                  Delete account
+                  {t('header.account.deleteAccount')}
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
           ) : (
             <Group gap="sm">
               <Button variant="subtle" onClick={() => setLoginModalOpened(true)}>
-                Log in
+                {t('header.login')}
               </Button>
               <Button onClick={() => setSignupModalOpened(true)}>
-                Sign up
+                {t('header.signup')}
               </Button>
+              <SegmentedControl
+                value={language}
+                onChange={(value: string) => setLanguage(value as 'en' | 'fr')}
+                data={[
+                  { label: 'EN', value: 'en' },
+                  { label: 'FR', value: 'fr' }
+                ]}
+              />
             </Group>
           )}
         </Group>

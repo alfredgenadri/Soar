@@ -1,5 +1,6 @@
 import { Container, Grid, Card, Image, Text, Button, Group, Stack } from '@mantine/core';
 import { IconPhone, IconWorld, IconBrandTelegram } from '@tabler/icons-react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface Resource {
   id: number;
@@ -51,12 +52,14 @@ const resources: Resource[] = [
 ];
 
 export function Resources() {
+  const { t } = useLanguage();
+
   return (
     <Container size="lg" py="xl">
       <Text size="xl" fw={700} ta="center" mb="xl">
-        Mental Health Resources
+        {t('resources.title')}
       </Text>
-
+  
       <Grid>
         {resources.map((resource) => (
           <Grid.Col key={resource.id} span={{ base: 12, sm: 6, md: 4 }}>
@@ -68,21 +71,19 @@ export function Resources() {
                   alt={resource.name}
                   fit="contain"
                   width={"auto"}
-                  style={{ 
-                    margin: '1rem 0'  /* Added vertical margin */
-                  }}
+                  style={{ margin: '1rem 0' }}
                 />
               </Card.Section>
-
+  
               <Stack mt="md" gap="sm">
                 <Text fw={500} size="lg" c={resource.emergency ? 'red' : undefined}>
-                  {resource.name}
+                  {t(`resources.${resource.id}.name`)}
                 </Text>
-
+  
                 <Text size="sm" c="dimmed">
-                  {resource.description}
+                  {t(`resources.${resource.id}.description`)}
                 </Text>
-
+  
                 <Group gap="xs">
                   {resource.contacts.phone && (
                     <Button 
@@ -92,10 +93,10 @@ export function Resources() {
                       component="a"
                       href={`tel:${resource.contacts.phone}`}
                     >
-                      Call {resource.contacts.phone}
+                      {t('resources.callButton')} {resource.contacts.phone}
                     </Button>
                   )}
-
+  
                   {resource.contacts.website && (
                     <Button 
                       variant="light"
@@ -104,10 +105,10 @@ export function Resources() {
                       href={resource.contacts.website}
                       target="_blank"
                     >
-                      Website
+                      {t('resources.websiteButton')}
                     </Button>
                   )}
-
+  
                   {resource.contacts.text && (
                     <Button 
                       variant="light"
@@ -115,7 +116,7 @@ export function Resources() {
                       component="a"
                       href={`sms:${resource.contacts.text}`}
                     >
-                      Text {resource.contacts.text}
+                      {t('resources.textButton')} {resource.contacts.text}
                     </Button>
                   )}
                 </Group>

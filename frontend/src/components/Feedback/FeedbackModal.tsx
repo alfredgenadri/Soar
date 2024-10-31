@@ -4,6 +4,7 @@ import { notifications } from '@mantine/notifications';
 import { IconMicrophone } from '@tabler/icons-react';
 import axios from 'axios';
 import { useState, useRef } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface FeedbackModalProps {
   opened: boolean;
@@ -15,6 +16,7 @@ export function FeedbackModal({ opened, onClose }: FeedbackModalProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<BlobPart[]>([]);
+  const { t } = useLanguage();
 
   const form = useForm({
     initialValues: {
@@ -99,27 +101,27 @@ export function FeedbackModal({ opened, onClose }: FeedbackModalProps) {
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Share Your Feedback" size="lg">
+    <Modal opened={opened} onClose={onClose} title={t('feedback.title')} size="lg">
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="md">
           <Text size="sm" c="dimmed">
-            We value your feedback! Please share your thoughts to help us improve our services.
+            {t('feedback.description')}
           </Text>
 
           <Radio.Group
-            label="Feedback Type"
+            label={t('feedback.feedbackType')}
             {...form.getInputProps('feedbackType')}
           >
             <Group mt="xs">
-              <Radio value="general" label="General" />
-              <Radio value="bug" label="Bug Report" />
-              <Radio value="feature" label="Feature Request" />
-              <Radio value="other" label="Other" />
+              <Radio value="general" label={t('feedback.types.general')} />
+              <Radio value="bug" label={t('feedback.types.bug')} />
+              <Radio value="feature" label={t('feedback.types.feature')} />
+              <Radio value="other" label={t('feedback.types.other')} />
             </Group>
           </Radio.Group>
 
           <Stack gap="xs">
-            <Text size="sm" fw={500}>Rating</Text>
+            <Text size="sm" fw={500}>{t('feedback.rating')}</Text>
             <Rating 
               size="lg"
               value={form.values.rating} 
@@ -130,8 +132,8 @@ export function FeedbackModal({ opened, onClose }: FeedbackModalProps) {
 
           <Textarea
             required
-            label="Message"
-            placeholder="Please share your feedback here..."
+            label={t('feedback.message')}
+            placeholder={t('feedback.messagePlaceholder')}
             minRows={4}
             {...form.getInputProps('message')}
             rightSection={
@@ -146,8 +148,8 @@ export function FeedbackModal({ opened, onClose }: FeedbackModalProps) {
           />
 
           <Group justify="flex-end" mt="md">
-            <Button variant="light" onClick={onClose}>Cancel</Button>
-            <Button type="submit">Submit Feedback</Button>
+            <Button variant="light" onClick={onClose}>{t('feedback.cancel')}</Button>
+            <Button type="submit">{t('feedback.submit')}</Button>
           </Group>
         </Stack>
       </form>
