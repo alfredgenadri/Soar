@@ -1,34 +1,23 @@
 version: "3.1"
 
-intents:
-  - greet
-  - goodbye
-  - affirm
-  - deny
-  - mood_great
-  - mood_unhappy
-  - bot_challenge
+slots:
+  thread_id:
+    type: text
+    mappings:
+    - type: custom
+
+actions:
+  - action_default_fallback
+
+config:
+  store_entities_as_slots: true
 
 responses:
-  utter_greet:
-  - text: "Hey! How are you?"
+  utter_default:
+    - text: "I'll help you with that."
 
-  utter_cheer_up:
-  - text: "Here is something to cheer you up:"
-    image: "https://i.imgur.com/nGF1K8f.jpg"
-
-  utter_did_that_help:
-  - text: "Did that help you?"
-
-  utter_happy:
-  - text: "Great, carry on!"
-
-  utter_goodbye:
-  - text: "Bye"
-
-  utter_iamabot:
-  - text: "I am a bot, powered by Rasa."
-
-session_config:
-  session_expiration_time: 60
-  carry_over_slots_to_new_session: true
+policies:
+  - name: RulePolicy
+    core_fallback_threshold: 0.3
+    core_fallback_action_name: "action_default_fallback"
+    enable_fallback_prediction: true
