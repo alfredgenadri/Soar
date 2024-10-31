@@ -1,4 +1,4 @@
-import { Modal, Textarea, Button, Group, Radio, Stack, Text, NumberInput, ActionIcon, Loader } from '@mantine/core';
+import { Modal, Textarea, Button, Group, Radio, Stack, Text, ActionIcon, Loader, Rating } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { IconMicrophone } from '@tabler/icons-react';
@@ -24,7 +24,7 @@ export function FeedbackModal({ opened, onClose }: FeedbackModalProps) {
     },
     validate: {
       message: (value) => (value.length < 10 ? 'Message must be at least 10 characters' : null),
-      rating: (value) => (value < 1 || value > 10 ? 'Rating must be between 1 and 10' : null),
+      rating: (value) => (value < 1 ? 'Please provide a rating' : null),
     },
   });
 
@@ -118,13 +118,15 @@ export function FeedbackModal({ opened, onClose }: FeedbackModalProps) {
             </Group>
           </Radio.Group>
 
-          <NumberInput
-            label="Rating"
-            description="How would you rate your experience? (1-10)"
-            min={1}
-            max={10}
-            {...form.getInputProps('rating')}
-          />
+          <Stack gap="xs">
+            <Text size="sm" fw={500}>Rating</Text>
+            <Rating 
+              size="lg"
+              value={form.values.rating} 
+              onChange={(value) => form.setFieldValue('rating', value)}
+              count={10}
+            />
+          </Stack>
 
           <Textarea
             required
