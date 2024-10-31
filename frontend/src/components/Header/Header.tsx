@@ -25,10 +25,11 @@ import {
 import { LoginModal } from '../Auth/LoginModal';
 import { SignupModal } from '../Auth/SignupModal';
 import { useAuth } from '../../contexts/AuthContext';
+import { FeedbackModal } from '../Feedback/FeedbackModal';
 
 import classes from './Header.module.css';
 
-const tabs = ['Resources', 'Assistant'];
+const tabs = ['Resources', 'Assistant', 'Feedback'];
 
 export function Header() {
   const theme = useMantineTheme();
@@ -36,14 +37,25 @@ export function Header() {
   const [userMenuOpened, setUserMenuOpened] = useState(false);
   const [loginModalOpened, setLoginModalOpened] = useState(false);
   const [signupModalOpened, setSignupModalOpened] = useState(false);
+  const [feedbackModalOpened, setFeedbackModalOpened] = useState(false);
   
   const { isAuthenticated, user, logout } = useAuth();
 
   const items = tabs.map((tab) => (
-    <Tabs.Tab value={tab} key={tab}>
+    <Tabs.Tab 
+      value={tab} 
+      key={tab}
+      onClick={() => handleTabClick(tab)}
+    >
       {tab}
     </Tabs.Tab>
   ));
+
+  const handleTabClick = (tab: string) => {
+    if (tab === 'Feedback') {
+      setFeedbackModalOpened(true);
+    }
+  };
 
   return (
     <div className={classes.header}>
@@ -139,6 +151,8 @@ export function Header() {
 
       <LoginModal opened={loginModalOpened} onClose={() => setLoginModalOpened(false)} />
       <SignupModal opened={signupModalOpened} onClose={() => setSignupModalOpened(false)} />
+      <FeedbackModal opened={feedbackModalOpened} onClose={() => setFeedbackModalOpened(false)} />
+        
     </div>
   );
 }
