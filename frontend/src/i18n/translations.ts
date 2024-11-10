@@ -9,14 +9,22 @@ export const translations = {
       account: {
         profile: 'Profile',
         settings: 'Settings',
-        deleteAccount: 'Delete account'
+        deleteAccount: 'Delete account',
+        logout: 'Logout'
       }
     },
     chat: {
       title: 'Chat with Assistant',
       newChat: 'New Chat',
       startConversation: 'Start a new conversation',
-      noConversations: 'No conversations yet'
+      noConversations: 'No conversations yet',
+      sendMessage: 'Send',
+      typeMessage: 'Type your message...',
+      loading: 'Assistant is typing...',
+      errorMessage: 'Failed to send message',
+      retryButton: 'Retry',
+      deleteConversation: 'Delete conversation',
+      conversationDeleted: 'Conversation deleted successfully'
     },
     resources: {
       title: 'Mental Health Resources',
@@ -97,14 +105,22 @@ export const translations = {
       account: {
         profile: 'Profil',
         settings: 'Paramètres',
-        deleteAccount: 'Supprimer le compte'
+        deleteAccount: 'Supprimer le compte',
+        logout: 'Déconnexion'
       }
     },
     chat: {
       title: 'Discuter avec l\'assistant',
       newChat: 'Nouvelle conversation',
       startConversation: 'Démarrer une nouvelle conversation',
-      noConversations: 'Aucune conversation'
+      noConversations: 'Aucune conversation',
+      sendMessage: 'Envoyer',
+      typeMessage: 'Tapez votre message...',
+      loading: 'L\'assistant écrit...',
+      errorMessage: 'Échec de l\'envoi du message',
+      retryButton: 'Réessayer',
+      deleteConversation: 'Supprimer la conversation',
+      conversationDeleted: 'Conversation supprimée avec succès'
     },
     resources: {
       title: 'Ressources en santé mentale',

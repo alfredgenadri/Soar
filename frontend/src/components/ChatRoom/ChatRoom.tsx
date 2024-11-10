@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import { ConversationList } from './ConversationList';
 import { notifications } from '@mantine/notifications';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 
 interface Message {
@@ -47,6 +48,7 @@ const ChatRoom = () => {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [streamingMessage, setStreamingMessage] = useState<string>('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const { t } = useLanguage();
 
 
   console.log(messages);
@@ -289,14 +291,14 @@ const ChatRoom = () => {
         <Grid.Col span={user?.email ? 9 : 12}>
           <Paper shadow="md" radius="lg" p="xl">
             <Title order={2} mb="lg">
-              Chat with Assistant
+              {t('chat.title')}
             </Title>
 
             {!currentConversation && (
               <Flex direction="column" align="center" justify="center" style={{ minHeight: '60vh' }}>
-                <Text size="xl" mb="md">Start a new conversation</Text>
+                <Text size="xl" mb="md">{t('chat.startConversation')}</Text>
                 <Button onClick={handleNewConversation} leftSection={<IconPlus size={20} />}>
-                  New Chat
+                  {t('chat.newChat')}
                 </Button>
               </Flex>
             )}
@@ -403,7 +405,7 @@ const ChatRoom = () => {
                   <TextInput
                     value={userMessage}
                     onChange={(e) => setUserMessage(e.currentTarget.value)}
-                    placeholder="Type your message..."
+                    placeholder={t('chat.typeMessage')}
                     onKeyDown={handleKeyDown}
                     style={{ flex: 1 }}
                     rightSection={
@@ -417,7 +419,7 @@ const ChatRoom = () => {
                     }
                   />
                   <Button onClick={sendMessage} leftSection={<IconSend size={18} />}>
-                    Send
+                    {t('chat.sendMessage')}
                   </Button>
                 </Flex>
               </>
