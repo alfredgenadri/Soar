@@ -203,68 +203,61 @@ const ChatRoom = () => {
 
   const sendMessage = async () => {
     const trimmedMessage = userMessage.trim();
-    if (trimmedMessage === '' || !currentConversation) return;
-
-    const userMsg: Message = {
-      sender: 'user',
-      text: trimmedMessage,
-      timestamp: new Date(),
-      user_email: user?.email || 'guest'
-    };
-
-    setMessages(prev => [...prev, userMsg]);
-    setUserMessage('');
+    if (trimmedMessage === '' || !currentConversation || isProcessing) return;
 
     try {
-      const response = await axios.post('http://localhost:8000/api/chat/message/', {
-        conversationId: currentConversation.id,
-        message: trimmedMessage,
-        userId: user?.email || 'guest',
-        is_audio: false,
-        is_user: true,
-        user_email: user?.email || 'guest'
-      });
+        setIsProcessing(true);
+        setUserMessage('');
 
-      // Update conversations with user message
-      setConversations(prev => prev.map(conv =>
-        conv.id === currentConversation.id
-          ? {
-              ...conv,
-              lastMessage: trimmedMessage,
-              timestamp: new Date(),
-              messages: [...(conv.messages || []), userMsg]
-            }
-          : conv
-      ));
-
-      const botResponses = response.data;
-      for (const botResponse of botResponses) {
-        const botMessage = {
-          sender: 'bot' as const,
-          text: botResponse.text || botResponse.content || '',
-          timestamp: new Date(),
-          image: botResponse.image
+        const userMsg = {
+            sender: 'user' as const,
+            text: trimmedMessage,
+            timestamp: new Date(),
+            user_email: user?.email || 'guest'
         };
 
-        // Wait for streaming to complete before adding message
-        await streamResponse(botMessage.text);
-        
-        setMessages(prev => [...prev, botMessage]);
-        setConversations(prev => prev.map(conv =>
-          conv.id === currentConversation.id
-            ? {
-                ...conv,
-                lastMessage: botMessage.text,
-                timestamp: botMessage.timestamp,
-                messages: [...(conv.messages || []), botMessage]
-              }
-            : conv
-        ));
-      }
+        setMessages(prev => [...prev, userMsg]);
+
+        const response = await axios.post('http://localhost:8000/api/chat/message/', {
+            conversationId: currentConversation.id,
+            message: trimmedMessage,
+            user_email: user?.email || 'guest'
+        }, {
+            timeout: 30000
+        });
+
+        if (response.data && response.data.length > 0) {
+            const botMessage = {
+                sender: 'bot' as const,
+                text: response.data[0].text,
+                timestamp: new Date(response.data[0].timestamp)
+            };
+
+            setMessages(prev => [...prev, botMessage]);
+            setConversations(prev => prev.map(conv =>
+                conv.id === currentConversation.id
+                    ? {
+                        ...conv,
+                        lastMessage: botMessage.text,
+                        timestamp: botMessage.timestamp,
+                        messages: [...(conv.messages || []), userMsg, botMessage]
+                    }
+                    : conv
+            ));
+        } else {
+            throw new Error('No response from bot');
+        }
     } catch (error) {
-      console.error('Error sending message:', error);
+        console.error('Error sending message:', error);
+        notifications.show({
+            title: 'Error',
+            message: 'Failed to get response from the chatbot. Please try again.',
+            color: 'red'
+        });
+    } finally {
+        setIsProcessing(false);
     }
-  };
+};
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter') {

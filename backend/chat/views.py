@@ -9,6 +9,9 @@ import uuid
 from langdetect import detect
 import whisper
 import tempfile
+import threading
+import logging
+import time
 
 RASA_API_URL = 'http://localhost:5005'
 
@@ -81,60 +84,63 @@ class ConversationView(APIView):
 
 class MessageView(APIView):
     def post(self, request):
-        conversation_id = request.data.get('conversationId')
-        user_email = request.data.get('userId', 'guest')
-        is_audio = request.data.get('is_audio', False)
-        
-        conversation = get_object_or_404(Conversation, id=conversation_id)
-        user_message = request.data.get('message')
-        
-        # Save user message with proper user identification
-        user_msg = Message.objects.create(
-            conversation=conversation,
-            content=user_message,
-            is_user=True,  # Always true for user messages
-            user_email=user_email
-        )
-
-        if is_audio:
-            audio_file = request.FILES.get('audio')
-            if not audio_file:
-                return Response({"error": "No audio file provided"}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Use SpeechToTextView to handle audio
-            stt_view = SpeechToTextView()
-            stt_response = stt_view.post(request)
-            user_message = stt_response.data['text']
-            detected_language = stt_response.data['detected_language']
-        else:
-            user_message = request.data.get('message')
-
         try:
-            rasa_response = requests.post(f'{RASA_API_URL}/webhooks/rest/webhook', json={
-                'sender': conversation.session_id,
-                'message': user_message
-            })
-            bot_responses = rasa_response.json()
-        except requests.exceptions.RequestException:
-            bot_responses = [{
-                'text': "I apologize, but I'm temporarily unavailable. Please try again later."
-            }]
+            message = request.data.get('message')
+            conversation_id = request.data.get('conversationId')
+            user_email = request.data.get('user_email', 'guest')
 
-        # Save bot responses
-        saved_responses = []
-        for response in bot_responses:
+            if not message or not conversation_id:
+                return Response(
+                    {'error': 'Message and conversationId are required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            conversation = get_object_or_404(Conversation, id=conversation_id)
+            
+            # Save user message
+            Message.objects.create(
+                conversation=conversation,
+                content=message,
+                is_user=True,
+                user_email=user_email
+            )
+
+            # Send to Rasa with unique sender ID
+            unique_sender = f"{conversation_id}_{int(time.time())}"
+            rasa_response = requests.post(
+                'http://localhost:5005/webhooks/rest/webhook',
+                json={"sender": unique_sender, "message": message},
+                timeout=30
+            )
+
+            if not rasa_response.ok:
+                raise Exception(f"Rasa returned status {rasa_response.status_code}")
+
+            bot_responses = rasa_response.json()
+            
+            if not bot_responses:
+                return Response([])
+
+            # Save and return bot response
+            response = bot_responses[0]
             bot_msg = Message.objects.create(
                 conversation=conversation,
                 content=response.get('text', ''),
                 is_user=False
             )
-            saved_responses.append({
-                'content': bot_msg.content,
+
+            return Response([{
+                'text': bot_msg.content,
                 'timestamp': bot_msg.timestamp,
-                'is_user': False
-            })
-        
-        return Response(saved_responses)
+                'sender': 'bot'
+            }])
+
+        except Exception as e:
+            logging.error(f"Error in MessageView: {str(e)}")
+            return Response(
+                {'error': 'Failed to process message'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
 class SpeechToTextUtils:
     _instance = None

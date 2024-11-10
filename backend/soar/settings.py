@@ -32,10 +32,6 @@ DEBUG = os.getenv('DEBUG')
 
 ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1']
 
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-
-OPENAI_ASSISTANT_ID = os.getenv('OPENAI_ASSISTANT_ID')
-
 # Application definition
 
 INSTALLED_APPS = [
