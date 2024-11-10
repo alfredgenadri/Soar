@@ -2,6 +2,7 @@ import { Modal, TextInput, Button, Group } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useAuth } from '../../contexts/AuthContext';
 import { notifications } from '@mantine/notifications';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface LoginModalProps {
   opened: boolean;
@@ -10,14 +11,16 @@ interface LoginModalProps {
 
 export const LoginModal: React.FC<LoginModalProps> = ({ opened, onClose }) => {
   const { login } = useAuth();
+  const { t } = useLanguage();
+
   const form = useForm({
     initialValues: {
       email: '',
       password: '',
     },
     validate: {
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
-      password: (value) => (value.length < 6 ? 'Password must be at least 6 characters' : null),
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : t('auth.signup.validation.invalidEmail')),
+      password: (value) => (value.length < 6 ? t('auth.signup.validation.passwordLength') : null),
     },
   });
 
@@ -25,40 +28,40 @@ export const LoginModal: React.FC<LoginModalProps> = ({ opened, onClose }) => {
     try {
       await login(values.email, values.password);
       notifications.show({
-        title: 'Success',
-        message: 'Logged in successfully',
+        title: t('auth.login.success'),
+        message: t('auth.login.success'),
         color: 'green'
       });
       onClose();
       form.reset();
     } catch (error: any) {
       notifications.show({
-        title: 'Error',
-        message: error.response?.data?.error || 'Failed to login',
+        title: t('auth.login.error'),
+        message: error.response?.data?.error || t('auth.login.error'),
         color: 'red'
       });
     }
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Login">
+    <Modal opened={opened} onClose={onClose} title={t('auth.login.title')}>
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <TextInput
           required
-          label="Email"
-          placeholder="your@email.com"
+          label={t('auth.login.email')}
+          placeholder={t('auth.login.emailPlaceholder')}
           {...form.getInputProps('email')}
         />
         <TextInput
           required
           type="password"
-          label="Password"
-          placeholder="Your password"
+          label={t('auth.login.password')}
+          placeholder={t('auth.login.passwordPlaceholder')}
           mt="md"
           {...form.getInputProps('password')}
         />
         <Group align="right" mt="md">
-          <Button type="submit">Login</Button>
+          <Button type="submit">{t('auth.login.submit')}</Button>
         </Group>
       </form>
     </Modal>

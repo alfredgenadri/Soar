@@ -57,7 +57,7 @@ export function Header() {
   ));
 
   const handleTabClick = (tab: string) => {
-    if (tab === 'Feedback') {
+    if (tab === t('header.feedback')) {
       setFeedbackModalOpened(true);
     }
   };

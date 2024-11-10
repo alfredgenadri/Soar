@@ -2,6 +2,7 @@ import { Modal, TextInput, Button, Group } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useAuth } from '../../contexts/AuthContext';
 import { notifications } from '@mantine/notifications';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface SignupModalProps {
   opened: boolean;
@@ -10,6 +11,8 @@ interface SignupModalProps {
 
 export const SignupModal: React.FC<SignupModalProps> = ({ opened, onClose }) => {
   const { signup } = useAuth();
+  const { t } = useLanguage();
+
   const form = useForm({
     initialValues: {
       name: '',
@@ -18,11 +21,11 @@ export const SignupModal: React.FC<SignupModalProps> = ({ opened, onClose }) => 
       confirmPassword: '',
     },
     validate: {
-      name: (value) => (value.length < 2 ? 'Name must be at least 2 characters' : null),
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
-      password: (value) => (value.length < 6 ? 'Password must be at least 6 characters' : null),
+      name: (value) => (value.length < 2 ? t('auth.signup.validation.nameLength') : null),
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : t('auth.signup.validation.invalidEmail')),
+      password: (value) => (value.length < 6 ? t('auth.signup.validation.passwordLength') : null),
       confirmPassword: (value, values) =>
-        value !== values.password ? 'Passwords did not match' : null,
+        value !== values.password ? t('auth.signup.validation.passwordMatch') : null,
     },
   });
 
@@ -30,55 +33,55 @@ export const SignupModal: React.FC<SignupModalProps> = ({ opened, onClose }) => 
     try {
       await signup(values.name, values.email, values.password);
       notifications.show({
-        title: 'Success',
-        message: 'Account created successfully',
+        title: t('auth.signup.success'),
+        message: t('auth.signup.success'),
         color: 'green'
       });
       onClose();
       form.reset();
     } catch (error: any) {
       notifications.show({
-        title: 'Error',
-        message: error.response?.data?.message || 'Failed to create account',
+        title: t('auth.signup.error'),
+        message: error.response?.data?.message || t('auth.signup.error'),
         color: 'red'
       });
     }
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Sign Up">
+    <Modal opened={opened} onClose={onClose} title={t('auth.signup.title')}>
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <TextInput
           required
-          label="Name"
-          placeholder="Your name"
+          label={t('auth.signup.name')}
+          placeholder={t('auth.signup.namePlaceholder')}
           {...form.getInputProps('name')}
         />
         <TextInput
           required
-          label="Email"
-          placeholder="your@email.com"
+          label={t('auth.signup.email')}
+          placeholder={t('auth.signup.emailPlaceholder')}
           mt="md"
           {...form.getInputProps('email')}
         />
         <TextInput
           required
           type="password"
-          label="Password"
-          placeholder="Your password"
+          label={t('auth.signup.password')}
+          placeholder={t('auth.signup.passwordPlaceholder')}
           mt="md"
           {...form.getInputProps('password')}
         />
         <TextInput
           required
           type="password"
-          label="Confirm Password"
-          placeholder="Confirm your password"
+          label={t('auth.signup.confirmPassword')}
+          placeholder={t('auth.signup.confirmPasswordPlaceholder')}
           mt="md"
           {...form.getInputProps('confirmPassword')}
         />
         <Group align="right" mt="md">
-          <Button type="submit">Sign Up</Button>
+          <Button type="submit">{t('auth.signup.submit')}</Button>
         </Group>
       </form>
     </Modal>

@@ -53,6 +53,38 @@ export const translations = {
       messagePlaceholder: 'Please share your feedback here...',
       submit: 'Submit Feedback',
       cancel: 'Cancel'
+    },
+    auth: {
+      login: {
+        title: 'Login',
+        email: 'Email',
+        emailPlaceholder: 'your@email.com',
+        password: 'Password',
+        passwordPlaceholder: 'Your password',
+        submit: 'Login',
+        success: 'Logged in successfully',
+        error: 'Failed to login'
+      },
+      signup: {
+        title: 'Sign Up',
+        name: 'Name',
+        namePlaceholder: 'Your name',
+        email: 'Email',
+        emailPlaceholder: 'your@email.com',
+        password: 'Password',
+        passwordPlaceholder: 'Your password',
+        confirmPassword: 'Confirm Password',
+        confirmPasswordPlaceholder: 'Confirm your password',
+        submit: 'Sign Up',
+        success: 'Account created successfully',
+        error: 'Failed to create account',
+        validation: {
+          nameLength: 'Name must be at least 2 characters',
+          invalidEmail: 'Invalid email',
+          passwordLength: 'Password must be at least 6 characters',
+          passwordMatch: 'Passwords did not match'
+        }
+      }
     }
   },
   fr: {
@@ -109,6 +141,38 @@ export const translations = {
       messagePlaceholder: 'Veuillez partager vos commentaires ici...',
       submit: 'Envoyer',
       cancel: 'Annuler'
+    },
+    auth: {
+      login: {
+        title: 'Connexion',
+        email: 'Courriel',
+        emailPlaceholder: 'votre@courriel.com',
+        password: 'Mot de passe',
+        passwordPlaceholder: 'Votre mot de passe',
+        submit: 'Se connecter',
+        success: 'Connexion réussie',
+        error: 'Échec de la connexion'
+      },
+      signup: {
+        title: 'Inscription',
+        name: 'Nom',
+        namePlaceholder: 'Votre nom',
+        email: 'Courriel',
+        emailPlaceholder: 'votre@courriel.com',
+        password: 'Mot de passe',
+        passwordPlaceholder: 'Votre mot de passe',
+        confirmPassword: 'Confirmer le mot de passe',
+        confirmPasswordPlaceholder: 'Confirmer votre mot de passe',
+        submit: 'S\'inscrire',
+        success: 'Compte créé avec succès',
+        error: 'Échec de la création du compte',
+        validation: {
+          nameLength: 'Le nom doit contenir au moins 2 caractères',
+          invalidEmail: 'Courriel invalide',
+          passwordLength: 'Le mot de passe doit contenir au moins 6 caractères',
+          passwordMatch: 'Les mots de passe ne correspondent pas'
+        }
+      }
     }
   }
 }; 
