@@ -2,8 +2,11 @@ import { Container, Title, Text, Button, Group, Card } from '@mantine/core';
 import { IconArrowRight, IconHeartHandshake, IconBrain, IconUserCircle } from '@tabler/icons-react';
 import { Carousel } from '@mantine/carousel';
 import classes from './HomePage.module.css';
+import { useNavigate } from 'react-router-dom';
 
 export function HomePage() {
+  const navigate = useNavigate();
+
   return (
     <div className={classes.wrapper}>
       <div className={classes.inner}>
@@ -24,8 +27,17 @@ export function HomePage() {
               size="xl" 
               className={classes.control} 
               rightSection={<IconArrowRight size={20} />}
+              onClick={() => navigate('/chat')}
             >
-              Talk to Us
+              Talk to Assistant
+            </Button>
+            <Button 
+              size="xl" 
+              variant="outline"
+              rightSection={<IconArrowRight size={20} />}
+              onClick={() => navigate('/resources')}
+            >
+              Access Resources
             </Button>
           </Group>
         </div>
@@ -74,30 +86,36 @@ export function HomePage() {
           >
             <Carousel.Slide>
               <Card className={classes.featureCard}>
-                <IconHeartHandshake className={classes.featureIcon} stroke={1.5} />
+                <IconHeartHandshake className={classes.featureIcon} stroke={1.5} size={48} />
                 <Text className={classes.featureTitle}>24/7 AI Support</Text>
                 <Text className={classes.featureText}>
-                  Always here to listen and provide guidance when you need it most
+                  Access immediate emotional support and guidance whenever you need it. Our AI companion 
+                  is always available to listen, provide coping strategies, and offer personalized 
+                  support for your mental well-being journey.
                 </Text>
               </Card>
             </Carousel.Slide>
             
             <Carousel.Slide>
               <Card className={classes.featureCard}>
-                <IconBrain className={classes.featureIcon} stroke={1.5} />
+                <IconBrain className={classes.featureIcon} stroke={1.5} size={48} />
                 <Text className={classes.featureTitle}>Resource Library</Text>
                 <Text className={classes.featureText}>
-                  Access to comprehensive mental health resources and information
+                  Explore our comprehensive collection of mental health resources, including articles, 
+                  exercises, and professional guidance. Find tools and strategies tailored to your 
+                  specific needs and circumstances.
                 </Text>
               </Card>
             </Carousel.Slide>
             
             <Carousel.Slide>
               <Card className={classes.featureCard}>
-                <IconUserCircle className={classes.featureIcon} stroke={1.5} />
+                <IconUserCircle className={classes.featureIcon} stroke={1.5} size={48} />
                 <Text className={classes.featureTitle}>Personalized Care</Text>
                 <Text className={classes.featureText}>
-                  Tailored support that adapts to your unique needs and journey
+                  Experience support that adapts to you. Our platform learns from your interactions 
+                  to provide increasingly personalized guidance and recommendations, ensuring you 
+                  receive the most relevant and effective support.
                 </Text>
               </Card>
             </Carousel.Slide>

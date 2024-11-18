@@ -1,7 +1,7 @@
 .wrapper {
   position: relative;
   min-height: 100vh;
-  padding-top: calc(var(--mantine-spacing-xl) * 4);
+  padding-top: calc(var(--mantine-spacing-xl) * 2);
   padding-bottom: var(--mantine-spacing-xl);
   background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-8));
   width: 100%;
@@ -48,7 +48,7 @@
 }
 
 .description {
-  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-1));
+  color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
   font-size: var(--mantine-font-size-lg);
   line-height: 1.7;
   margin-bottom: calc(var(--mantine-spacing-xl) * 2);
@@ -74,33 +74,39 @@
 }
 
 .featureCard {
-  padding: var(--mantine-spacing-xl);
+  padding: calc(var(--mantine-spacing-xl) * 1.5);
   background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
   border-radius: var(--mantine-radius-lg);
   border: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  align-items: center;
+  text-align: center;
+  justify-content: flex-start;
+  gap: var(--mantine-spacing-md);
 }
 
 .featureIcon {
   color: var(--mantine-color-blue-6);
-  width: rem(40px);
-  height: rem(40px);
-  margin-bottom: rem(16px);
+  width: rem(48px);
+  height: rem(48px);
+  margin-bottom: var(--mantine-spacing-md);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .featureTitle {
-  font-size: rem(20px);
+  font-size: var(--mantine-font-size-xl);
   font-weight: 600;
-  margin-bottom: rem(8px);
+  margin-bottom: var(--mantine-spacing-xs);
   color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
 }
 
 .featureText {
   color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-2));
-  font-size: rem(16px);
+  font-size: var(--mantine-font-size-md);
   line-height: 1.5;
 }
 
