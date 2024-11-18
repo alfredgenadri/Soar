@@ -1,0 +1,133 @@
+.wrapper {
+  position: relative;
+  min-height: rem(750px);
+  padding-top: rem(40px);
+  padding-bottom: rem(80px);
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+}
+
+.inner {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: rem(50px);
+}
+
+.content {
+  max-width: rem(480px);
+  margin-right: rem(40px);
+  position: relative;
+  z-index: 1;
+}
+
+.title {
+  font-family: 'Greycliff CF', var(--mantine-font-family);
+  font-size: rem(56px);
+  line-height: 1.2;
+  font-weight: 900;
+  color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
+
+  @media (max-width: 576px) {
+    font-size: rem(28px);
+  }
+}
+
+.highlight {
+  color: var(--mantine-color-blue-6);
+}
+
+.description {
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-2));
+  font-size: rem(20px);
+  line-height: 1.6;
+  margin-top: rem(24px);
+
+  @media (max-width: 576px) {
+    font-size: rem(16px);
+  }
+}
+
+.controls {
+  margin-top: rem(40px);
+}
+
+.control {
+  background-color: var(--mantine-color-blue-6);
+  color: var(--mantine-color-white);
+}
+
+.carouselWrapper {
+  flex: 1;
+  max-width: rem(600px);
+}
+
+.featureCard {
+  padding: rem(24px);
+  border-radius: rem(12px);
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  border: rem(1px) solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+}
+
+.featureIcon {
+  color: var(--mantine-color-blue-6);
+  width: rem(40px);
+  height: rem(40px);
+  margin-bottom: rem(16px);
+}
+
+.featureTitle {
+  font-size: rem(20px);
+  font-weight: 600;
+  margin-bottom: rem(8px);
+  color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
+}
+
+.featureText {
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-2));
+  font-size: rem(16px);
+  line-height: 1.5;
+}
+
+.background {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.backgroundGradient {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: radial-gradient(circle at top right, var(--mantine-color-blue-1) 0%, transparent 70%);
+}
+
+@media (max-width: 48em) {
+  .inner {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .content {
+    max-width: 100%;
+    margin-right: 0;
+    margin-bottom: rem(40px);
+  }
+
+  .carouselWrapper {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .controls {
+    justify-content: center;
+  }
+} 

@@ -29,6 +29,7 @@ import { SignupModal } from '../Auth/SignupModal';
 import { useAuth } from '../../contexts/AuthContext';
 import { FeedbackModal } from '../Feedback/FeedbackModal';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useNavigate } from 'react-router-dom';
 
 import classes from './Header.module.css';
 
@@ -44,8 +45,25 @@ export function Header() {
   
   const { isAuthenticated, user, logout } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const navigate = useNavigate();
 
   const tabs = [t('header.resources'), t('header.assistant'), t('header.feedback')];
+
+  const handleTabClick = (tab: string) => {
+    switch (tab) {
+      case t('header.resources'):
+        navigate('/resources');
+        break;
+      case t('header.assistant'):
+        navigate('/chat');
+        break;
+      case t('header.feedback'):
+        setFeedbackModalOpened(true);
+        break;
+      default:
+        break;
+    }
+  };
 
   const items = tabs.map((tab) => (
     <Tabs.Tab 
@@ -56,12 +74,6 @@ export function Header() {
       {tab}
     </Tabs.Tab>
   ));
-
-  const handleTabClick = (tab: string) => {
-    if (tab === t('header.feedback')) {
-      setFeedbackModalOpened(true);
-    }
-  };
 
   return (
     <div className={classes.header}>

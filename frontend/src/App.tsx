@@ -17,6 +17,7 @@ function App() {
           <MantineProvider>
             <Header />
             <Routes>
+              <Route path="/" element={<HomePage />} />
               <Route path="/chat" element={<ChatRoom />} />
               <Route path="/resources" element={<Resources />} />
             </Routes>
