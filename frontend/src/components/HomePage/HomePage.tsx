@@ -86,7 +86,7 @@ export function HomePage() {
           >
             <Carousel.Slide>
               <Card className={classes.featureCard}>
-                <IconHeartHandshake className={classes.featureIcon} stroke={1.5} size={48} />
+                <IconHeartHandshake className={classes.featureIcon} stroke={1.5} size={80} />
                 <Text className={classes.featureTitle}>24/7 AI Support</Text>
                 <Text className={classes.featureText}>
                   Access immediate emotional support and guidance whenever you need it. Our AI companion 
@@ -98,7 +98,7 @@ export function HomePage() {
             
             <Carousel.Slide>
               <Card className={classes.featureCard}>
-                <IconBrain className={classes.featureIcon} stroke={1.5} size={48} />
+                <IconBrain className={classes.featureIcon} stroke={1.5} size={80} />
                 <Text className={classes.featureTitle}>Resource Library</Text>
                 <Text className={classes.featureText}>
                   Explore our comprehensive collection of mental health resources, including articles, 
@@ -110,7 +110,7 @@ export function HomePage() {
             
             <Carousel.Slide>
               <Card className={classes.featureCard}>
-                <IconUserCircle className={classes.featureIcon} stroke={1.5} size={48} />
+                <IconUserCircle className={classes.featureIcon} stroke={1.5} size={80} />
                 <Text className={classes.featureTitle}>Personalized Care</Text>
                 <Text className={classes.featureText}>
                   Experience support that adapts to you. Our platform learns from your interactions 
