@@ -3,23 +3,23 @@ import { IconArrowRight, IconHeartHandshake, IconBrain, IconUserCircle } from '@
 import { Carousel } from '@mantine/carousel';
 import classes from './HomePage.module.css';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export function HomePage() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <div className={classes.wrapper}>
       <div className={classes.inner}>
         <div className={classes.content}>
           <Title className={classes.title}>
-            Supporting <span className={classes.highlight}>You</span> <br />
-            Every Step of the Way
+            {t('homepage.title.supporting')} <span className={classes.highlight}>{t('homepage.title.you')}</span> <br />
+            {t('homepage.title.everyStep')}
           </Title>
 
           <Text className={classes.description}>
-            Our platform offers personalized mental health support and resources, 
-            with a 24/7 AI companion ready to listen and guide you on your journey 
-            to better mental well-being.
+            {t('homepage.description')}
           </Text>
 
           <Group className={classes.controls}>
@@ -29,7 +29,7 @@ export function HomePage() {
               rightSection={<IconArrowRight size={20} />}
               onClick={() => navigate('/chat')}
             >
-              Talk to Assistant
+              {t('homepage.buttons.talkToAssistant')}
             </Button>
             <Button 
               size="xl" 
@@ -37,7 +37,7 @@ export function HomePage() {
               rightSection={<IconArrowRight size={20} />}
               onClick={() => navigate('/resources')}
             >
-              Access Resources
+              {t('homepage.buttons.accessResources')}
             </Button>
           </Group>
         </div>
@@ -87,11 +87,9 @@ export function HomePage() {
             <Carousel.Slide>
               <Card className={classes.featureCard}>
                 <IconHeartHandshake className={classes.featureIcon} stroke={1.5} size={80} />
-                <Text className={classes.featureTitle}>24/7 AI Support</Text>
+                <Text className={classes.featureTitle}>{t('homepage.features.aiSupport.title')}</Text>
                 <Text className={classes.featureText}>
-                  Access immediate emotional support and guidance whenever you need it. Our AI companion 
-                  is always available to listen, provide coping strategies, and offer personalized 
-                  support for your mental well-being journey.
+                  {t('homepage.features.aiSupport.description')}
                 </Text>
               </Card>
             </Carousel.Slide>
@@ -99,11 +97,9 @@ export function HomePage() {
             <Carousel.Slide>
               <Card className={classes.featureCard}>
                 <IconBrain className={classes.featureIcon} stroke={1.5} size={80} />
-                <Text className={classes.featureTitle}>Resource Library</Text>
+                <Text className={classes.featureTitle}>{t('homepage.features.resources.title')}</Text>
                 <Text className={classes.featureText}>
-                  Explore our comprehensive collection of mental health resources, including articles, 
-                  exercises, and professional guidance. Find tools and strategies tailored to your 
-                  specific needs and circumstances.
+                  {t('homepage.features.resources.description')}
                 </Text>
               </Card>
             </Carousel.Slide>
@@ -111,11 +107,9 @@ export function HomePage() {
             <Carousel.Slide>
               <Card className={classes.featureCard}>
                 <IconUserCircle className={classes.featureIcon} stroke={1.5} size={80} />
-                <Text className={classes.featureTitle}>Personalized Care</Text>
+                <Text className={classes.featureTitle}>{t('homepage.features.personalizedCare.title')}</Text>
                 <Text className={classes.featureText}>
-                  Experience support that adapts to you. Our platform learns from your interactions 
-                  to provide increasingly personalized guidance and recommendations, ensuring you 
-                  receive the most relevant and effective support.
+                  {t('homepage.features.personalizedCare.description')}
                 </Text>
               </Card>
             </Carousel.Slide>

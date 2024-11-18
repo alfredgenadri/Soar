@@ -93,6 +93,32 @@ export const translations = {
           passwordMatch: 'Passwords did not match'
         }
       }
+    },
+    homepage: {
+      title: {
+        supporting: 'Supporting',
+        you: 'You',
+        everyStep: 'Every Step of the Way'
+      },
+      description: 'Our platform offers personalized mental health support and resources, with a 24/7 AI companion ready to listen and guide you on your journey to better mental well-being.',
+      buttons: {
+        talkToAssistant: 'Talk to Assistant',
+        accessResources: 'Access Resources'
+      },
+      features: {
+        aiSupport: {
+          title: '24/7 AI Support',
+          description: 'Access immediate emotional support and guidance whenever you need it. Our AI companion is always available to listen, provide coping strategies, and offer personalized support for your mental well-being journey.'
+        },
+        resources: {
+          title: 'Resource Library',
+          description: 'Explore our comprehensive collection of mental health resources, including articles, exercises, and professional guidance. Find tools and strategies tailored to your specific needs and circumstances.'
+        },
+        personalizedCare: {
+          title: 'Personalized Care',
+          description: 'Experience support that adapts to you. Our platform learns from your interactions to provide increasingly personalized guidance and recommendations, ensuring you receive the most relevant and effective support.'
+        }
+      }
     }
   },
   fr: {
@@ -187,6 +213,32 @@ export const translations = {
           invalidEmail: 'Courriel invalide',
           passwordLength: 'Le mot de passe doit contenir au moins 6 caractères',
           passwordMatch: 'Les mots de passe ne correspondent pas'
+        }
+      }
+    },
+    homepage: {
+      title: {
+        supporting: 'Vous',
+        you: 'soutenir',
+        everyStep: 'à chaque étape'
+      },
+      description: 'Notre plateforme offre un soutien et des ressources personnalisés en santé mentale, avec un compagnon IA disponible 24/7 pour vous écouter et vous guider dans votre parcours vers un meilleur bien-être mental.',
+      buttons: {
+        talkToAssistant: 'Parler à l\'assistant',
+        accessResources: 'Accéder aux ressources'
+      },
+      features: {
+        aiSupport: {
+          title: 'Soutien IA 24/7',
+          description: 'Accédez à un soutien émotionnel et des conseils immédiats quand vous en avez besoin. Notre compagnon IA est toujours disponible pour écouter, fournir des stratégies d\'adaptation et offrir un soutien personnalisé pour votre bien-être mental.'
+        },
+        resources: {
+          title: 'Bibliothèque de ressources',
+          description: 'Explorez notre collection complète de ressources en santé mentale, incluant des articles, des exercices et des conseils professionnels. Trouvez des outils et des stratégies adaptés à vos besoins et circonstances spécifiques.'
+        },
+        personalizedCare: {
+          title: 'Soins personnalisés',
+          description: 'Bénéficiez d\'un soutien qui s\'adapte à vous. Notre plateforme apprend de vos interactions pour fournir des conseils et des recommandations de plus en plus personnalisés, garantissant que vous recevez le soutien le plus pertinent et efficace.'
         }
       }
     }
