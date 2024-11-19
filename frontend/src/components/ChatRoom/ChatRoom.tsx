@@ -226,12 +226,16 @@ const ChatRoom = () => {
             timeout: 30000
         });
 
+        console.log("Response from backend:", response.data);
+
         if (response.data && response.data.length > 0) {
             const botMessage = {
                 sender: 'bot' as const,
-                text: response.data[0].text,
+                text: String(response.data[0].text),
                 timestamp: new Date(response.data[0].timestamp)
             };
+
+            console.log("Bot message object:", botMessage);
 
             setMessages(prev => [...prev, botMessage]);
             setConversations(prev => prev.map(conv =>

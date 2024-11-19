@@ -12,6 +12,7 @@ import tempfile
 import threading
 import logging
 import time
+from .bedrock import BedrockAgent
 
 RASA_API_URL = 'http://localhost:5005'
 
@@ -83,6 +84,10 @@ class ConversationView(APIView):
         })
 
 class MessageView(APIView):
+    def __init__(self):
+        super().__init__()
+        self.bedrock_agent = BedrockAgent()
+
     def post(self, request):
         try:
             message = request.data.get('message')
@@ -105,35 +110,30 @@ class MessageView(APIView):
                 user_email=user_email
             )
 
-            # Send to Rasa with unique sender ID
-            unique_sender = f"{conversation_id}_{int(time.time())}"
-            rasa_response = requests.post(
-                'http://localhost:5005/webhooks/rest/webhook',
-                json={"sender": unique_sender, "message": message},
-                timeout=30
+            # Get response from Bedrock Agent
+            response = self.bedrock_agent.invoke_agent(
+                message=message,
+                session_id=conversation.session_id
             )
 
-            if not rasa_response.ok:
-                raise Exception(f"Rasa returned status {rasa_response.status_code}")
-
-            bot_responses = rasa_response.json()
-            
-            if not bot_responses:
-                return Response([])
+            if 'error' in response:
+                raise Exception(response['error'])
 
             # Save and return bot response
-            response = bot_responses[0]
             bot_msg = Message.objects.create(
                 conversation=conversation,
-                content=response.get('text', ''),
+                content=str(response['text']),
                 is_user=False
             )
 
-            return Response([{
-                'text': bot_msg.content,
+            api_response = [{
+                'text': str(bot_msg.content),
                 'timestamp': bot_msg.timestamp,
                 'sender': 'bot'
-            }])
+            }]
+            
+            print("Sending to frontend:", api_response)
+            return Response(api_response)
 
         except Exception as e:
             logging.error(f"Error in MessageView: {str(e)}")

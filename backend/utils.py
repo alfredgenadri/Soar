@@ -49,6 +49,6 @@ class OpenAIHandler:
             return 'Updated.'
         return 'No Assistant Created.'
     
-oahandler = OpenAIHandler()
-response = oahandler.create_assistant()
-print(response)
+#oahandler = OpenAIHandler()
+#response = oahandler.create_assistant()
+#print(response)
