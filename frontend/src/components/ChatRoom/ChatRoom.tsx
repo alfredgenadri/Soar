@@ -208,6 +208,8 @@ const ChatRoom = () => {
     try {
         setIsProcessing(true);
         setUserMessage('');
+        setStreamingMessage('');
+        setIsStreaming(true);
 
         const userMsg = {
             sender: 'user' as const,
@@ -218,39 +220,66 @@ const ChatRoom = () => {
 
         setMessages(prev => [...prev, userMsg]);
 
-        const response = await axios.post('http://localhost:8000/api/chat/message/', {
-            conversationId: currentConversation.id,
-            message: trimmedMessage,
-            user_email: user?.email || 'guest'
-        }, {
-            timeout: 30000
+        const response = await fetch('http://localhost:8000/api/chat/message/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                conversationId: currentConversation.id,
+                message: trimmedMessage,
+                user_email: user?.email || 'guest'
+            })
         });
 
-        console.log("Response from backend:", response.data);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
 
-        if (response.data && response.data.length > 0) {
+        const reader = response.body?.getReader();
+        let fullResponse = '';
+
+        if (reader) {
+            try {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = new TextDecoder().decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = JSON.parse(line.slice(5));
+                            if (data.error) {
+                                throw new Error(data.error);
+                            }
+                            
+                            // Add each character with a delay
+                            const chars = data.chunk.split('');
+                            for (const char of chars) {
+                                await new Promise(resolve => setTimeout(resolve, 15));
+                                fullResponse += char;
+                                setStreamingMessage(fullResponse);
+                            }
+                        }
+                    }
+                }
+            } finally {
+                reader.releaseLock();
+            }
+        }
+
+        if (fullResponse) {
             const botMessage = {
                 sender: 'bot' as const,
-                text: String(response.data[0].text),
-                timestamp: new Date(response.data[0].timestamp)
+                text: fullResponse.trim(),
+                timestamp: new Date()
             };
 
-            console.log("Bot message object:", botMessage);
-
             setMessages(prev => [...prev, botMessage]);
-            setConversations(prev => prev.map(conv =>
-                conv.id === currentConversation.id
-                    ? {
-                        ...conv,
-                        lastMessage: botMessage.text,
-                        timestamp: botMessage.timestamp,
-                        messages: [...(conv.messages || []), userMsg, botMessage]
-                    }
-                    : conv
-            ));
-        } else {
-            throw new Error('No response from bot');
         }
+
     } catch (error) {
         console.error('Error sending message:', error);
         notifications.show({
@@ -260,6 +289,8 @@ const ChatRoom = () => {
         });
     } finally {
         setIsProcessing(false);
+        setIsStreaming(false);
+        setStreamingMessage('');
     }
 };
 

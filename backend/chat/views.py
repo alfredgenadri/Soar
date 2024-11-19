@@ -13,9 +13,8 @@ import threading
 import logging
 import time
 from .bedrock import BedrockAgent
-
-RASA_API_URL = 'http://localhost:5005'
-
+from django.http import StreamingHttpResponse
+import json
 
 class ConversationListView(APIView):
     def get(self, request):
@@ -88,6 +87,36 @@ class MessageView(APIView):
         super().__init__()
         self.bedrock_agent = BedrockAgent()
 
+    def generate_response(self, message, conversation, user_email):
+        try:
+            # Save user message
+            Message.objects.create(
+                conversation=conversation,
+                content=message,
+                is_user=True,
+                user_email=user_email
+            )
+
+            # Get streaming response from Bedrock Agent
+            full_response = ""
+            for chunk in self.bedrock_agent.invoke_agent(message, conversation.session_id):
+                if chunk.startswith("Error:"):
+                    yield f"data: {json.dumps({'error': chunk})}\n\n"
+                    return
+                
+                full_response += chunk
+                yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+
+            # Save complete bot response
+            Message.objects.create(
+                conversation=conversation,
+                content=full_response,
+                is_user=False
+            )
+                
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
     def post(self, request):
         try:
             message = request.data.get('message')
@@ -102,38 +131,13 @@ class MessageView(APIView):
 
             conversation = get_object_or_404(Conversation, id=conversation_id)
             
-            # Save user message
-            Message.objects.create(
-                conversation=conversation,
-                content=message,
-                is_user=True,
-                user_email=user_email
+            response = StreamingHttpResponse(
+                self.generate_response(message, conversation, user_email),
+                content_type='text/event-stream'
             )
-
-            # Get response from Bedrock Agent
-            response = self.bedrock_agent.invoke_agent(
-                message=message,
-                session_id=conversation.session_id
-            )
-
-            if 'error' in response:
-                raise Exception(response['error'])
-
-            # Save and return bot response
-            bot_msg = Message.objects.create(
-                conversation=conversation,
-                content=str(response['text']),
-                is_user=False
-            )
-
-            api_response = [{
-                'text': str(bot_msg.content),
-                'timestamp': bot_msg.timestamp,
-                'sender': 'bot'
-            }]
-            
-            print("Sending to frontend:", api_response)
-            return Response(api_response)
+            response['Cache-Control'] = 'no-cache'
+            response['X-Accel-Buffering'] = 'no'
+            return response
 
         except Exception as e:
             logging.error(f"Error in MessageView: {str(e)}")

@@ -36,25 +36,16 @@ class BedrockAgent:
                 inputText=message
             )
             
-            # Handle EventStream response
+            # First, collect the full response
             event_stream = response.get('completion')
             completion_text = ""
             
-            # Process each event in the stream
             for event in event_stream:
-                # Get the chunk data
                 if 'chunk' in event:
                     chunk_data = event['chunk'].get('bytes').decode('utf-8')
                     completion_text += chunk_data
-            
-            return {
-                'text': completion_text,
-                'session_id': session_id
-            }
+                    # Yield each chunk as it comes
+                    yield chunk_data
             
         except ClientError as error:
-            print(f"Error invoking Bedrock Agent: {error}")
-            return {
-                'error': str(error),
-                'session_id': session_id
-            }
+            yield f"Error: {str(error)}"
