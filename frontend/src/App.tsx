@@ -9,20 +9,23 @@ import ChatRoom from './components/ChatRoom/ChatRoom';
 import { Header } from './components/Header/Header';
 import { Resources } from './components/Resources/Resources';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
   return (
     <LanguageProvider>
       <BrowserRouter>
         <AuthProvider>
-          <MantineProvider>
-            <Header />
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/chat" element={<ChatRoom />} />
-              <Route path="/resources" element={<Resources />} />
-            </Routes>
-          </MantineProvider>
+          <ThemeProvider>
+            <MantineProvider>
+              <Header />
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/chat" element={<ChatRoom />} />
+                <Route path="/resources" element={<Resources />} />
+              </Routes>
+            </MantineProvider>
+          </ThemeProvider>
         </AuthProvider>
       </BrowserRouter>
     </LanguageProvider>

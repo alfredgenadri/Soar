@@ -22,8 +22,8 @@ import {
   IconSwitchHorizontal,
   IconTrash,
   IconChevronDown,
-  IconUser,
 } from '@tabler/icons-react';
+import { useTheme } from '../../contexts/ThemeContext';
 import { LoginModal } from '../Auth/LoginModal';
 import { SignupModal } from '../Auth/SignupModal';
 import { useAuth } from '../../contexts/AuthContext';
@@ -42,12 +42,10 @@ export function Header() {
   const [loginModalOpened, setLoginModalOpened] = useState(false);
   const [signupModalOpened, setSignupModalOpened] = useState(false);
   const [feedbackModalOpened, setFeedbackModalOpened] = useState(false);
-  
   const { isAuthenticated, user, logout } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const { theme: appTheme, setTheme } = useTheme();
   const navigate = useNavigate();
-
-  const tabs = [t('header.resources'), t('header.assistant'), t('header.feedback')];
 
   const handleTabClick = (tab: string) => {
     switch (tab) {
@@ -66,11 +64,7 @@ export function Header() {
   };
 
   const items = tabs.map((tab) => (
-    <Tabs.Tab 
-      value={tab} 
-      key={tab}
-      onClick={() => handleTabClick(tab)}
-    >
+    <Tabs.Tab value={tab} key={tab} onClick={() => handleTabClick(tab)}>
       {tab}
     </Tabs.Tab>
   ));
@@ -79,20 +73,18 @@ export function Header() {
     <div className={classes.header}>
       <Container className={classes.mainSection} size="md">
         <Group justify="space-between">
-        
-        <Tabs
-          defaultValue="Home"
-          variant="outline"
-          visibleFrom="sm"
-          classNames={{
-            root: classes.tabs,
-            list: classes.tabsList,
-            tab: classes.tab,
-          }}
-        >
-          <Tabs.List>{items}</Tabs.List>
-        </Tabs>
-      
+          <Tabs
+            defaultValue="Home"
+            variant="outline"
+            visibleFrom="sm"
+            classNames={{
+              root: classes.tabs,
+              list: classes.tabsList,
+              tab: classes.tab,
+            }}
+          >
+            <Tabs.List>{items}</Tabs.List>
+          </Tabs>
 
           <Burger opened={opened} onClick={toggle} hiddenFrom="xs" size="sm" />
 
@@ -115,7 +107,10 @@ export function Header() {
                       <Text fw={500} size="sm" lh={1} mr={3}>
                         {user?.name}
                       </Text>
-                      <IconChevronDown style={{ width: rem(12), height: rem(12) }} stroke={1.5} />
+                      <IconChevronDown
+                        style={{ width: rem(12), height: rem(12) }}
+                        stroke={1.5}
+                      />
                     </Group>
                   </UnstyledButton>
                 </Menu.Target>
@@ -130,7 +125,10 @@ export function Header() {
                   </Menu.Item>
                   <Menu.Item
                     leftSection={
-                      <IconSwitchHorizontal style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
+                      <IconSwitchHorizontal
+                        style={{ width: rem(16), height: rem(16) }}
+                        stroke={1.5}
+                      />
                     }
                   >
                     {t('header.account.settings')}
@@ -149,18 +147,30 @@ export function Header() {
                   <Menu.Label>Danger zone</Menu.Label>
                   <Menu.Item
                     color="red"
-                    leftSection={<IconTrash style={{ width: rem(16), height: rem(16) }} stroke={1.5} />}
+                    leftSection={
+                      <IconTrash style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
+                    }
                   >
                     {t('header.account.deleteAccount')}
                   </Menu.Item>
                 </Menu.Dropdown>
               </Menu>
+
+              <SegmentedControl
+                value={appTheme}
+                onChange={(value: string) => setTheme(value as 'default' | 'deuteranopia')}
+                data={[
+                  { label: 'Default', value: 'default' },
+                  { label: 'Deuteranopia', value: 'deuteranopia' },
+                ]}
+              />
+
               <SegmentedControl
                 value={language}
                 onChange={(value: string) => setLanguage(value as 'en' | 'fr')}
                 data={[
                   { label: 'EN', value: 'en' },
-                  { label: 'FR', value: 'fr' }
+                  { label: 'FR', value: 'fr' },
                 ]}
               />
             </Group>
@@ -169,15 +179,13 @@ export function Header() {
               <Button variant="subtle" onClick={() => setLoginModalOpened(true)}>
                 {t('header.login')}
               </Button>
-              <Button onClick={() => setSignupModalOpened(true)}>
-                {t('header.signup')}
-              </Button>
+              <Button onClick={() => setSignupModalOpened(true)}>{t('header.signup')}</Button>
               <SegmentedControl
                 value={language}
                 onChange={(value: string) => setLanguage(value as 'en' | 'fr')}
                 data={[
                   { label: 'EN', value: 'en' },
-                  { label: 'FR', value: 'fr' }
+                  { label: 'FR', value: 'fr' },
                 ]}
               />
             </Group>
@@ -188,7 +196,6 @@ export function Header() {
       <LoginModal opened={loginModalOpened} onClose={() => setLoginModalOpened(false)} />
       <SignupModal opened={signupModalOpened} onClose={() => setSignupModalOpened(false)} />
       <FeedbackModal opened={feedbackModalOpened} onClose={() => setFeedbackModalOpened(false)} />
-        
     </div>
   );
 }

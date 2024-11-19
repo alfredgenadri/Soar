@@ -1,6 +1,7 @@
 import { Container, Grid, Card, Image, Text, Button, Group, Stack } from '@mantine/core';
 import { IconPhone, IconWorld, IconBrandTelegram } from '@tabler/icons-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface Resource {
   id: number;
@@ -22,9 +23,9 @@ const resources: Resource[] = [
     description: 'For immediate emergency assistance. Available 24/7 for life-threatening situations and severe mental health crises.',
     logo: '/images/911.png',
     contacts: {
-      phone: '911'
+      phone: '911',
     },
-    emergency: true
+    emergency: true,
   },
   {
     id: 2,
@@ -34,9 +35,9 @@ const resources: Resource[] = [
     contacts: {
       phone: '988',
       text: '988',
-      website: 'https://988lifeline.org'
+      website: 'https://988lifeline.org',
     },
-    emergency: true
+    emergency: true,
   },
   {
     id: 3,
@@ -45,86 +46,137 @@ const resources: Resource[] = [
     logo: '/images/uottawa.png',
     contacts: {
       phone: '613-562-5200',
-      website: 'https://www.uottawa.ca/wellness'
+      website: 'https://www.uottawa.ca/wellness',
     },
-    emergency: false
+    emergency: false,
   },
 ];
 
 export function Resources() {
   const { t } = useLanguage();
+  const { theme } = useTheme();
+
+  const deuteranopiaColors = {
+    background: '#e8f4fa',
+    cardBackground: '#fef9c3',
+    text: '#212121',
+    emergency: '#f39c12',
+    buttonPrimary: '#85c1e9',
+    buttonSecondary: '#f7dc6f',
+  };
 
   return (
-    <Container size="lg" py="xl">
-      <Text size="xl" fw={700} ta="center" mb="xl">
-        {t('resources.title')}
-      </Text>
-  
-      <Grid>
-        {resources.map((resource) => (
-          <Grid.Col key={resource.id} span={{ base: 12, sm: 6, md: 4 }}>
-            <Card shadow="sm" padding="lg" radius="md" withBorder>
-              <Card.Section>
-                <Image
-                  src={resource.logo}
-                  height={200}
-                  alt={resource.name}
-                  fit="contain"
-                  width={"auto"}
-                  style={{ margin: '1rem 0' }}
-                />
-              </Card.Section>
-  
-              <Stack mt="md" gap="sm">
-                <Text fw={500} size="lg" c={resource.emergency ? 'red' : undefined}>
-                  {t(`resources.${resource.id}.name`)}
-                </Text>
-  
-                <Text size="sm" c="dimmed">
-                  {t(`resources.${resource.id}.description`)}
-                </Text>
-  
-                <Group gap="xs">
-                  {resource.contacts.phone && (
-                    <Button 
-                      variant="light" 
-                      color={resource.emergency ? 'red' : 'blue'} 
-                      leftSection={<IconPhone size={16} />}
-                      component="a"
-                      href={`tel:${resource.contacts.phone}`}
-                    >
-                      {t('resources.callButton')} {resource.contacts.phone}
-                    </Button>
-                  )}
-  
-                  {resource.contacts.website && (
-                    <Button 
-                      variant="light"
-                      leftSection={<IconWorld size={16} />}
-                      component="a"
-                      href={resource.contacts.website}
-                      target="_blank"
-                    >
-                      {t('resources.websiteButton')}
-                    </Button>
-                  )}
-  
-                  {resource.contacts.text && (
-                    <Button 
-                      variant="light"
-                      leftSection={<IconBrandTelegram size={16} />}
-                      component="a"
-                      href={`sms:${resource.contacts.text}`}
-                    >
-                      {t('resources.textButton')} {resource.contacts.text}
-                    </Button>
-                  )}
-                </Group>
-              </Stack>
-            </Card>
-          </Grid.Col>
-        ))}
-      </Grid>
-    </Container>
+    <div
+      style={{
+        backgroundColor: theme === 'deuteranopia' ? deuteranopiaColors.background : 'white',
+        color: theme === 'deuteranopia' ? deuteranopiaColors.text : '#333',
+        padding: '2rem 0',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <Container size="xl" style={{ flex: 1 }}>
+        <Text size="xl" fw={700} ta="center" mb="xl">
+          {t('resources.title')}
+        </Text>
+
+        <Grid>
+          {resources.map((resource) => (
+            <Grid.Col key={resource.id} span={{ base: 12, sm: 6, md: 4 }}>
+              <Card
+                shadow="sm"
+                padding="lg"
+                radius="md"
+                withBorder
+                style={{
+                  backgroundColor: theme === 'deuteranopia' ? deuteranopiaColors.cardBackground : 'white',
+                  color: theme === 'deuteranopia' ? deuteranopiaColors.text : undefined,
+                }}
+              >
+                <Card.Section>
+                  <Image
+                    src={resource.logo}
+                    height={200}
+                    alt={resource.name}
+                    fit="contain"
+                    width={'auto'}
+                    style={{ margin: '1rem 0' }}
+                  />
+                </Card.Section>
+
+                <Stack mt="md" gap="sm">
+                  <Text
+                    fw={500}
+                    size="lg"
+                    style={{
+                      color: resource.emergency
+                        ? theme === 'deuteranopia'
+                          ? deuteranopiaColors.emergency
+                          : 'red'
+                        : undefined,
+                    }}
+                  >
+                    {t(`resources.${resource.id}.name`)}
+                  </Text>
+
+                  <Text size="sm" c="dimmed">
+                    {t(`resources.${resource.id}.description`)}
+                  </Text>
+
+                  <Group gap="xs">
+                    {resource.contacts.phone && (
+                      <Button
+                        variant="light"
+                        style={{
+                          backgroundColor: theme === 'deuteranopia' ? deuteranopiaColors.buttonPrimary : undefined,
+                          color: theme === 'deuteranopia' ? '#000' : undefined,
+                        }}
+                        leftSection={<IconPhone size={16} />}
+                        component="a"
+                        href={`tel:${resource.contacts.phone}`}
+                      >
+                        {t('resources.callButton')} {resource.contacts.phone}
+                      </Button>
+                    )}
+
+                    {resource.contacts.website && (
+                      <Button
+                        variant="light"
+                        style={{
+                          backgroundColor: theme === 'deuteranopia' ? deuteranopiaColors.buttonSecondary : undefined,
+                          color: theme === 'deuteranopia' ? '#000' : undefined,
+                        }}
+                        leftSection={<IconWorld size={16} />}
+                        component="a"
+                        href={resource.contacts.website}
+                        target="_blank"
+                      >
+                        {t('resources.websiteButton')}
+                      </Button>
+                    )}
+
+                    {resource.contacts.text && (
+                      <Button
+                        variant="light"
+                        style={{
+                          backgroundColor: theme === 'deuteranopia' ? deuteranopiaColors.buttonSecondary : undefined,
+                          color: theme === 'deuteranopia' ? '#000' : undefined,
+                        }}
+                        leftSection={<IconBrandTelegram size={16} />}
+                        component="a"
+                        href={`sms:${resource.contacts.text}`}
+                      >
+                        {t('resources.textButton')} {resource.contacts.text}
+                      </Button>
+                    )}
+                  </Group>
+                </Stack>
+              </Card>
+            </Grid.Col>
+          ))}
+        </Grid>
+      </Container>
+    </div>
   );
 }

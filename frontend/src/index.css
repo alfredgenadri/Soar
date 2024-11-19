@@ -11,3 +11,14 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+body.default {
+  background-color: rgb(255, 142, 142);
+  color: black;
+}
+
+/* Color-Blind Theme  will change and add more soon*/
+body.colorBlind {
+  background-color: #000000; /* High contrast background */
+  color: black;
+}

@@ -6,6 +6,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ConversationList } from './ConversationList';
 import { notifications } from '@mantine/notifications';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useTheme } from '../../contexts/ThemeContext'; // Add this at the top
+
 
 
 interface Message {
@@ -15,6 +17,16 @@ interface Message {
   image?: string;
   user_email?: string;
 }
+
+
+
+const deuteranopiaColors = {
+  background: '#e8f4fa', // Light blue
+  userMessageBackground: '#cce7ff', // Light blue for user messages
+  botMessageBackground: '#d1f4d8', // Light green for bot messages
+  text: '#212121', // Dark gray for text
+};
+
 
 // Helper function to convert backend message format to frontend format
 const convertBackendMessage = (message: any): Message => {
@@ -49,6 +61,7 @@ const ChatRoom = () => {
   const [streamingMessage, setStreamingMessage] = useState<string>('');
   const [isStreaming, setIsStreaming] = useState(false);
   const { t } = useLanguage();
+  const { theme } = useTheme();
 
 
   console.log(messages);
@@ -267,7 +280,12 @@ const ChatRoom = () => {
   };
 
   return (
-    <Container fluid>
+    <Container fluid 
+    style={{
+      backgroundColor: theme === 'deuteranopia' ? deuteranopiaColors.background : 'white',
+      color: theme === 'deuteranopia' ? deuteranopiaColors.text : 'black',
+      minHeight: '100vh',
+    }}>
       <Grid>
         {user?.email && (
           <Grid.Col span={3}>
@@ -321,7 +339,9 @@ const ChatRoom = () => {
                             shadow="sm"
                             p="md"
                             style={{
-                              backgroundColor: message.sender === 'user' ? '#e3f2fd' : '#f1f8e9',
+                              backgroundColor: message.sender === 'user'
+                                ? theme === 'deuteranopia' ? deuteranopiaColors.userMessageBackground : '#e3f2fd'
+                                : theme === 'deuteranopia' ? deuteranopiaColors.botMessageBackground : '#f1f8e9',
                               borderRadius: message.sender === 'user' ? '20px 20px 5px 20px' : '20px 20px 20px 5px',
                             }}
                           >
