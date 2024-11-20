@@ -68,7 +68,7 @@ export function Resources() {
                 <Image
                   src={resource.logo}
                   height={200}
-                  alt={resource.name}
+                  alt={t(`resources.${resource.id}.name`)}
                   fit="contain"
                   width={"auto"}
                   style={{ margin: '1rem 0' }}

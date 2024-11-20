@@ -56,3 +56,13 @@
       border-bottom-color: transparent;
     }
   }
+  
+  .tab:focus-visible {
+    outline: 2px solid var(--mantine-color-blue-6);
+    outline-offset: 2px;
+  }
+  
+  .user:focus-visible {
+    outline: 2px solid var(--mantine-color-blue-6);
+    outline-offset: 2px;
+  }

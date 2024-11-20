@@ -13,7 +13,7 @@ export function HomePage() {
     <div className={classes.wrapper}>
       <div className={classes.inner}>
         <div className={classes.content}>
-          <Title className={classes.title}>
+          <Title order={1} className={classes.title}>
             {t('homepage.title.supporting')} <span className={classes.highlight}>{t('homepage.title.you')}</span> <br />
             {t('homepage.title.everyStep')}
           </Title>

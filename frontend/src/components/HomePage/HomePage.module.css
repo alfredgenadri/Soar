@@ -78,11 +78,7 @@
   font-size: var(--mantine-font-size-lg);
   line-height: 1.7;
   margin-bottom: calc(var(--mantine-spacing-xl) * 2);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-
-  @media (max-width: 768px) {
-    font-size: var(--mantine-font-size-md);
-  }
+  text-shadow: none;
 }
 
 .controls {
@@ -178,7 +174,7 @@
 }
 
 .featureText {
-  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-2));
+  color: light-dark(var(--mantine-color-gray-8), var(--mantine-color-gray-2));
   font-size: var(--mantine-font-size-md);
   line-height: 1.5;
 }

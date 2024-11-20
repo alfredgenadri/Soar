@@ -436,11 +436,13 @@ const ChatRoom = () => {
                     placeholder={t('chat.typeMessage')}
                     onKeyDown={handleKeyDown}
                     style={{ flex: 1 }}
+                    aria-label={t('chat.typeMessage')}
                     rightSection={
                       <ActionIcon 
                         onClick={isRecording ? stopRecording : startRecording}
                         variant="subtle"
                         loading={isProcessing}
+                        aria-label={isRecording ? 'Stop recording' : 'Start recording'}
                       >
                         {isProcessing ? <Loader size="sm" /> : <IconMicrophone color={isRecording ? 'red' : undefined} />}
                       </ActionIcon>

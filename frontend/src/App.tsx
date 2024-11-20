@@ -9,6 +9,7 @@ import ChatRoom from './components/ChatRoom/ChatRoom';
 import { Header } from './components/Header/Header';
 import { Resources } from './components/Resources/Resources';
 import { LanguageProvider } from './contexts/LanguageContext';
+import classes from './components/SkipLink/SkipLink.module.css';
 
 function App() {
   return (
@@ -16,12 +17,17 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <MantineProvider>
+            <a href="#main-content" className={classes.skipLink}>
+              Skip to main content
+            </a>
             <Header />
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/chat" element={<ChatRoom />} />
-              <Route path="/resources" element={<Resources />} />
-            </Routes>
+            <main id="main-content">
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/chat" element={<ChatRoom />} />
+                <Route path="/resources" element={<Resources />} />
+              </Routes>
+            </main>
           </MantineProvider>
         </AuthProvider>
       </BrowserRouter>

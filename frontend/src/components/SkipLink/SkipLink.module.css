@@ -1,0 +1,22 @@
+.skipLink {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  background: var(--mantine-color-white);
+  color: var(--mantine-color-black);
+  padding: var(--mantine-spacing-md);
+  text-decoration: none;
+  z-index: 10000;
+}
+
+.skipLink:focus {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: auto;
+  height: auto;
+  clip: auto;
+} 

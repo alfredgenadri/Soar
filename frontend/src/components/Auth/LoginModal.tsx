@@ -1,4 +1,4 @@
-import { Modal, TextInput, Button, Group } from '@mantine/core';
+import { Modal, TextInput, Button, Group, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useAuth } from '../../contexts/AuthContext';
 import { notifications } from '@mantine/notifications';
@@ -50,8 +50,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({ opened, onClose }) => {
           required
           label={t('auth.login.email')}
           placeholder={t('auth.login.emailPlaceholder')}
+          aria-invalid={form.errors.email ? 'true' : 'false'}
+          aria-describedby={form.errors.email ? 'email-error' : undefined}
           {...form.getInputProps('email')}
         />
+        {form.errors.email && (
+          <Text color="red" size="sm" id="email-error" role="alert">
+            {form.errors.email}
+          </Text>
+        )}
         <TextInput
           required
           type="password"
