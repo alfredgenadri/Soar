@@ -34,6 +34,19 @@ interface Conversation {
   timestamp: Date;
 }
 
+interface ConversationResponse {
+  id: string;
+  title: string;
+  lastMessage: string;
+  timestamp: string;
+  messages: Array<{
+    content?: string;
+    text?: string;
+    user_email?: string;
+    timestamp: string;
+  }>;
+}
+
 const ChatRoom = () => {
   const { user } = useAuth();
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
@@ -75,9 +88,20 @@ const ChatRoom = () => {
           }));
           
           setConversations(conversationsWithParsedDates);
-          setActiveConversationId(conversationsWithParsedDates[0].id);
-          setCurrentConversation(conversationsWithParsedDates[0]);
-          setMessages(conversationsWithParsedDates[0].messages);
+          
+          // If there's an active conversation, update its messages
+          if (activeConversationId) {
+            const activeConv = conversationsWithParsedDates.find((conv: Conversation) => conv.id === activeConversationId);
+            if (activeConv) {
+              setCurrentConversation(activeConv);
+              setMessages(activeConv.messages);
+            }
+          } else {
+            // Set the first conversation as active if none is selected
+            setActiveConversationId(conversationsWithParsedDates[0].id);
+            setCurrentConversation(conversationsWithParsedDates[0]);
+            setMessages(conversationsWithParsedDates[0].messages);
+          }
         }
       } catch (error) {
         console.error('Error fetching conversations:', error);
@@ -201,6 +225,41 @@ const ChatRoom = () => {
     });
   };
 
+  const refreshConversations = async () => {
+    try {
+      const response = await axios.get<ConversationResponse[]>(
+        `http://localhost:8000/api/chat/conversations/?email=${user?.email}`
+      );
+      
+      if (response.data.length > 0) {
+        const conversationsWithParsedDates: Conversation[] = response.data.map((conv: ConversationResponse) => ({
+          ...conv,
+          timestamp: new Date(conv.timestamp),
+          messages: conv.messages.map((msg): Message => ({
+            ...msg,
+            sender: msg.user_email ? ('user' as const) : ('bot' as const),
+            text: msg.content || msg.text || '',
+            timestamp: new Date(msg.timestamp),
+            user_email: msg.user_email
+          }))
+        }));
+        
+        setConversations(conversationsWithParsedDates);
+        
+        // Update current conversation if it's active
+        if (activeConversationId) {
+          const activeConv = conversationsWithParsedDates.find((conv: Conversation) => conv.id === activeConversationId);
+          if (activeConv) {
+            setCurrentConversation(activeConv);
+            setMessages(activeConv.messages);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing conversations:', error);
+    }
+  };
+
   const sendMessage = async () => {
     const trimmedMessage = userMessage.trim();
     if (trimmedMessage === '' || !currentConversation || isProcessing) return;
@@ -271,13 +330,15 @@ const ChatRoom = () => {
         }
 
         if (fullResponse) {
-            const botMessage = {
-                sender: 'bot' as const,
-                text: fullResponse.trim(),
-                timestamp: new Date()
+            const botMessage: Message = {
+              sender: 'bot',
+              text: fullResponse.trim(),
+              timestamp: new Date()
             };
-
             setMessages(prev => [...prev, botMessage]);
+            
+            // Add this line to refresh conversations after message is sent
+            await refreshConversations();
         }
 
     } catch (error) {
