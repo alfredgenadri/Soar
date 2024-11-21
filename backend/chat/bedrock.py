@@ -49,3 +49,43 @@ class BedrockAgent:
             
         except ClientError as error:
             yield f"Error: {str(error)}"
+
+    def generate_stream(self, prompt: str):
+        try:
+            response = self.bedrock_runtime.invoke_model(
+                modelId='anthropic.claude-3-haiku-20240307-v1:0',
+                body=json.dumps({
+                    'anthropic_version': 'bedrock-2023-05-31',
+                    'max_tokens': 1000,
+                    'messages': [{'role': 'user', 'content': prompt}]
+                })
+            )
+            
+            response_body = json.loads(response['body'].read())
+            text = response_body['content'][0]['text']
+            
+            # Simulate streaming by yielding chunks of text
+            chunk_size = 4  # Adjust this value as needed
+            for i in range(0, len(text), chunk_size):
+                yield text[i:i + chunk_size]
+
+        except Exception as e:
+            print(f"Error in generate_stream: {e}")
+            yield ""
+
+    def generate_response(self, prompt: str) -> str:
+        """Generate a single response without streaming"""
+        try:
+            response = self.bedrock_runtime.invoke_model(
+                modelId='anthropic.claude-3-haiku-20240307-v1:0',
+                body=json.dumps({
+                    'anthropic_version': 'bedrock-2023-05-31',
+                    'max_tokens': 1000,
+                    'messages': [{'role': 'user', 'content': prompt}]
+                })
+            )
+            response_body = json.loads(response['body'].read())
+            return response_body['content'][0]['text']
+        except Exception as e:
+            print(f"Error generating response: {e}")
+            return ""

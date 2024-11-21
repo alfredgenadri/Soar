@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Feedback, Conversation, Message
+from .models import Feedback, Conversation, Message, UserProfile
 from .serializers import FeedbackSerializer, ConversationSerializer, MessageSerializer
 import requests
 import uuid
@@ -94,69 +94,111 @@ class ConversationView(APIView):
         })
 
 class MessageView(APIView):
-    def __init__(self):
-        super().__init__()
-        self.bedrock_agent = BedrockAgent()
+    def update_user_profile(self, user_email: str, message_content: str, bot_response: str):
+        bedrock = BedrockAgent()
+        
+        prompt = f"""Based on this conversation, extract any important information about the user's:
+        - Goals
+        - Preferences
+        - Challenges
+        - Important life events
+        
+        Previous message: {message_content}
+        Bot response: {bot_response}
+        
+        Return only the new, important information as a JSON object, or return empty if no important information found.
+        Example: {{"goals": ["wants to work out daily"], "challenges": ["finding time to exercise"]}}"""
 
-    def generate_response(self, message, conversation, user_email):
         try:
+            extraction = json.loads(bedrock.generate_response(prompt))
+            if extraction:
+                profile, created = UserProfile.objects.get_or_create(user_email=user_email)
+                
+                # Update existing information
+                for category, items in extraction.items():
+                    if category not in profile.key_information:
+                        profile.key_information[category] = items
+                    else:
+                        # Convert to set to remove duplicates
+                        existing_items = set(profile.key_information[category])
+                        new_items = set(items)
+                        profile.key_information[category] = list(existing_items | new_items)
+                
+                profile.save()
+        except Exception as e:
+            print(f"Error updating user profile: {e}")
+
+    def get_relevant_context(self, user_email: str) -> str:
+        try:
+            profile = UserProfile.objects.get(user_email=user_email)
+            if profile.key_information:
+                context = "Important information about this user:\n"
+                for category, items in profile.key_information.items():
+                    context += f"{category.title()}: {', '.join(items)}\n"
+                return context
+        except UserProfile.DoesNotExist:
+            return ""
+        return ""
+
+    def post(self, request):
+        try:
+            conversation_id = request.data.get('conversationId')
+            user_message = request.data.get('message')
+            user_email = request.data.get('user_email')
+
+            # Get user context if logged in
+            context = ""
+            if user_email and user_email != 'guest':
+                context = self.get_relevant_context(user_email)
+
+            # Prepare the prompt with user context
+            system_message = (
+                f"{context}\n"
+                "Current conversation:\n"
+                f"User: {user_message}\n"
+                "Assistant:"
+            )
+
+            return StreamingHttpResponse(
+                self.stream_response(system_message, conversation_id, user_message, user_email),
+                content_type='text/event-stream'
+            )
+            
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+
+    def stream_response(self, prompt: str, conversation_id: str, user_message: str, user_email: str):
+        bedrock = BedrockAgent()
+        full_response = ""
+        
+        try:
+            for chunk in bedrock.generate_stream(prompt):
+                full_response += chunk
+                yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+            
+            # Save the message after getting full response
+            conversation = Conversation.objects.get(id=conversation_id)
+            
             # Save user message
             Message.objects.create(
                 conversation=conversation,
-                content=message,
-                is_user=True,
+                content=user_message,
                 user_email=user_email
             )
-
-            # Get streaming response from Bedrock Agent
-            full_response = ""
-            for chunk in self.bedrock_agent.invoke_agent(message, conversation.session_id):
-                if chunk.startswith("Error:"):
-                    yield f"data: {json.dumps({'error': chunk})}\n\n"
-                    return
-                
-                full_response += chunk
-                yield f"data: {json.dumps({'chunk': chunk})}\n\n"
-
-            # Save complete bot response
+            
+            # Save bot response
             Message.objects.create(
                 conversation=conversation,
-                content=full_response,
-                is_user=False
+                content=full_response.strip()
             )
+            
+            # Update user profile with new information
+            if user_email and user_email != 'guest':
+                self.update_user_profile(user_email, user_message, full_response)
                 
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
-    def post(self, request):
-        try:
-            message = request.data.get('message')
-            conversation_id = request.data.get('conversationId')
-            user_email = request.data.get('user_email', 'guest')
-
-            if not message or not conversation_id:
-                return Response(
-                    {'error': 'Message and conversationId are required'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            conversation = get_object_or_404(Conversation, id=conversation_id)
-            
-            response = StreamingHttpResponse(
-                self.generate_response(message, conversation, user_email),
-                content_type='text/event-stream'
-            )
-            response['Cache-Control'] = 'no-cache'
-            response['X-Accel-Buffering'] = 'no'
-            return response
-
-        except Exception as e:
-            logging.error(f"Error in MessageView: {str(e)}")
-            return Response(
-                {'error': 'Failed to process message'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-    
 class SpeechToTextUtils:
     _instance = None
 

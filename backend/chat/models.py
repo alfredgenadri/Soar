@@ -43,3 +43,11 @@ class Message(models.Model):
     is_user = models.BooleanField(default=False)
     user_email = models.CharField(max_length=255, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+class UserProfile(models.Model):
+    user_email = models.CharField(max_length=255, unique=True)
+    key_information = models.JSONField(default=dict)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Profile for {self.user_email}"
