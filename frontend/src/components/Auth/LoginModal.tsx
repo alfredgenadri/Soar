@@ -30,15 +30,21 @@ export const LoginModal: React.FC<LoginModalProps> = ({ opened, onClose }) => {
       notifications.show({
         title: t('auth.login.success'),
         message: t('auth.login.success'),
-        color: 'green'
+        color: 'green',
+        position: 'top-center',
+        autoClose: 5000,
       });
-      onClose();
+      
       form.reset();
+      onClose();
+
     } catch (error: any) {
       notifications.show({
         title: t('auth.login.error'),
-        message: error.response?.data?.error || t('auth.login.error'),
-        color: 'red'
+        message: error.response?.data?.message || t('auth.login.error'),
+        color: 'red',
+        position: 'top-center',
+        autoClose: 5000,
       });
     }
   };

@@ -15,6 +15,7 @@ import time
 from .bedrock import BedrockAgent
 from django.http import StreamingHttpResponse
 import json
+from rest_framework.decorators import api_view
 
 class ConversationListView(APIView):
     def get(self, request):
@@ -45,13 +46,23 @@ class ConversationListView(APIView):
             
         return Response(conversation_data)
     
-class FeedbackCreateView(generics.CreateAPIView):
-    queryset = Feedback.objects.all()
-    serializer_class = FeedbackSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+class FeedbackCreateView(APIView):
+    def post(self, request):
+        try:
+            # Print the received data for debugging
+            print("Received feedback data:", request.data)
+            
+            serializer = FeedbackSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': 'Feedback submitted successfully'})
+            # Print validation errors if any
+            print("Validation errors:", serializer.errors)
+            return Response(serializer.errors, status=400)
+        except Exception as e:
+            # Print the actual error
+            print("Error submitting feedback:", str(e))
+            return Response({'error': str(e)}, status=500)
 
 class ConversationView(APIView):
     def get(self, request):
@@ -190,3 +201,18 @@ class SpeechToTextView(APIView):
             return Response({"error": "Could not transcribe audio"}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"text": transcribed_text, "detected_language": detected_lang})
+
+
+class FeedbackView(APIView):
+    def post(self, request):
+        try:
+            data = request.data.copy()
+            data['user_email'] = request.user.email if request.user.is_authenticated else None
+            
+            serializer = FeedbackSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': 'Feedback submitted successfully'})
+            return Response(serializer.errors, status=400)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)

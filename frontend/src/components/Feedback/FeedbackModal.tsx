@@ -83,19 +83,32 @@ export function FeedbackModal({ opened, onClose }: FeedbackModalProps) {
 
   const handleSubmit = async (values: typeof form.values) => {
     try {
-      await axios.post('http://localhost:8000/api/feedback/', values);
+      const feedbackData = {
+        feedback_type: values.feedbackType,
+        message: values.message,
+        rating: values.rating,
+      };
+
+      await axios.post('http://localhost:8000/api/chat/feedback/', feedbackData);
+      
       notifications.show({
         title: 'Success',
         message: 'Thank you for your feedback!',
         color: 'green',
+        position: 'top-center',
+        autoClose: 5000,
       });
+      
       form.reset();
       onClose();
+
     } catch (error) {
       notifications.show({
         title: 'Error',
         message: 'Failed to submit feedback',
         color: 'red',
+        position: 'top-center',
+        autoClose: 5000,
       });
     }
   };

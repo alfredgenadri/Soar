@@ -4,8 +4,7 @@ from .models import Feedback, Conversation, Message
 class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
-        fields = ['id', 'content', 'rating', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        fields = ['feedback_type', 'message', 'rating', 'user_email']
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:

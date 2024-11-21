@@ -35,15 +35,21 @@ export const SignupModal: React.FC<SignupModalProps> = ({ opened, onClose }) => 
       notifications.show({
         title: t('auth.signup.success'),
         message: t('auth.signup.success'),
-        color: 'green'
+        color: 'green',
+        position: 'top-center',
+        autoClose: 5000,
       });
-      onClose();
+      
       form.reset();
+      onClose();
+
     } catch (error: any) {
       notifications.show({
         title: t('auth.signup.error'),
         message: error.response?.data?.message || t('auth.signup.error'),
-        color: 'red'
+        color: 'red',
+        position: 'top-center',
+        autoClose: 5000,
       });
     }
   };
