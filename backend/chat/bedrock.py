@@ -3,6 +3,7 @@ import json
 from botocore.exceptions import ClientError
 import os
 from dotenv import load_dotenv
+import re
 
 load_dotenv()
 
@@ -27,12 +28,19 @@ class BedrockAgent:
         self.agent_id = os.getenv('BEDROCK_AGENT_ID')
         self.agent_alias_id = os.getenv('BEDROCK_AGENT_ALIAS_ID')
 
+    def sanitize_session_id(self, email: str) -> str:
+        """Convert email to valid session ID format"""
+        if not email or email == 'guest':
+            return 'temp-session'
+        # Replace @ and any other invalid characters with '-'
+        return re.sub(r'[^0-9a-zA-Z._:-]', '-', email)
+
     def invoke_agent(self, message, session_id):
         try:
             response = self.bedrock_agent_runtime.invoke_agent(
                 agentId=self.agent_id,
                 agentAliasId=self.agent_alias_id,
-                sessionId=session_id,
+                sessionId=self.sanitize_session_id(session_id),
                 inputText=message
             )
             
@@ -50,42 +58,25 @@ class BedrockAgent:
         except ClientError as error:
             yield f"Error: {str(error)}"
 
-    def generate_stream(self, prompt: str):
+    def generate_stream(self, prompt: str, user_email: str = None):
         try:
-            response = self.bedrock_runtime.invoke_model(
-                modelId='anthropic.claude-3-haiku-20240307-v1:0',
-                body=json.dumps({
-                    'anthropic_version': 'bedrock-2023-05-31',
-                    'max_tokens': 1000,
-                    'messages': [{'role': 'user', 'content': prompt}]
-                })
-            )
-            
-            response_body = json.loads(response['body'].read())
-            text = response_body['content'][0]['text']
-            
-            # Simulate streaming by yielding chunks of text
-            chunk_size = 4  # Adjust this value as needed
-            for i in range(0, len(text), chunk_size):
-                yield text[i:i + chunk_size]
-
+            # Use sanitized user_email as session ID
+            session_id = user_email if user_email and user_email != 'guest' else 'temp-session'
+            for chunk in self.invoke_agent(prompt, session_id):
+                yield chunk
         except Exception as e:
             print(f"Error in generate_stream: {e}")
             yield ""
 
-    def generate_response(self, prompt: str) -> str:
+    def generate_response(self, prompt: str, user_email: str = None) -> str:
         """Generate a single response without streaming"""
         try:
-            response = self.bedrock_runtime.invoke_model(
-                modelId='anthropic.claude-3-haiku-20240307-v1:0',
-                body=json.dumps({
-                    'anthropic_version': 'bedrock-2023-05-31',
-                    'max_tokens': 1000,
-                    'messages': [{'role': 'user', 'content': prompt}]
-                })
-            )
-            response_body = json.loads(response['body'].read())
-            return response_body['content'][0]['text']
+            # Use sanitized user_email as session ID
+            session_id = user_email if user_email and user_email != 'guest' else 'temp-session'
+            full_response = ""
+            for chunk in self.invoke_agent(prompt, session_id):
+                full_response += chunk
+            return full_response
         except Exception as e:
             print(f"Error generating response: {e}")
             return ""
