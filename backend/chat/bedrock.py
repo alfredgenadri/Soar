@@ -26,6 +26,14 @@ class BedrockAgent:
         
         self.agent_id = os.getenv('BEDROCK_AGENT_ID')
         self.agent_alias_id = os.getenv('BEDROCK_AGENT_ALIAS_ID')
+        
+        # Add instructions loading
+        self.instructions = ""
+        try:
+            with open('chatbot_instructions.txt', 'r') as file:
+                self.instructions = file.read().strip()
+        except Exception as e:
+            print(f"Error loading instructions: {e}")
 
     def invoke_agent(self, message, session_id):
         try:
@@ -57,7 +65,12 @@ class BedrockAgent:
                 body=json.dumps({
                     'anthropic_version': 'bedrock-2023-05-31',
                     'max_tokens': 1000,
-                    'messages': [{'role': 'user', 'content': prompt}]
+                    'messages': [
+                        {
+                            'role': 'user',
+                            'content': f"Instructions: {self.instructions}\n\nUser message: {prompt}"
+                        }
+                    ]
                 })
             )
             
@@ -65,7 +78,7 @@ class BedrockAgent:
             text = response_body['content'][0]['text']
             
             # Simulate streaming by yielding chunks of text
-            chunk_size = 4  # Adjust this value as needed
+            chunk_size = 4
             for i in range(0, len(text), chunk_size):
                 yield text[i:i + chunk_size]
 
@@ -81,7 +94,12 @@ class BedrockAgent:
                 body=json.dumps({
                     'anthropic_version': 'bedrock-2023-05-31',
                     'max_tokens': 1000,
-                    'messages': [{'role': 'user', 'content': prompt}]
+                    'messages': [
+                        {
+                            'role': 'user',
+                            'content': f"Instructions: {self.instructions}\n\nUser message: {prompt}"
+                        }
+                    ]
                 })
             )
             response_body = json.loads(response['body'].read())

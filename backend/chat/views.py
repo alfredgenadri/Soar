@@ -97,34 +97,54 @@ class MessageView(APIView):
     def update_user_profile(self, user_email: str, message_content: str, bot_response: str):
         bedrock = BedrockAgent()
         
-        prompt = f"""Based on this conversation, extract any important information about the user's:
+        prompt = """Based on this conversation, extract any important information about the user's:
         - Goals
         - Preferences
         - Challenges
         - Important life events
+
+        Previous message: {message}
+        Bot response: {response}
+
+        Format your response EXACTLY as a JSON object with these categories as keys, or return an empty JSON object if no important information found.
+        Example: {{"goals": ["wants to work out daily"], "challenges": ["finding time to exercise"]}}
         
-        Previous message: {message_content}
-        Bot response: {bot_response}
-        
-        Return only the new, important information as a JSON object, or return empty if no important information found.
-        Example: {{"goals": ["wants to work out daily"], "challenges": ["finding time to exercise"]}}"""
+        Only respond with the JSON object, nothing else. Do not include any explanations or additional text.""".format(
+            message=message_content,
+            response=bot_response
+        )
 
         try:
-            extraction = json.loads(bedrock.generate_response(prompt))
+            # Get the response and clean it
+            extraction = bedrock.generate_response(prompt)
+            # Remove any potential markdown formatting or extra text
+            extraction = extraction.strip().strip('`').strip()
+            
+            # If the response starts with "json" or similar, remove it
+            if extraction.lower().startswith('json'):
+                extraction = extraction[4:].strip()
+            
             if extraction:
-                profile, created = UserProfile.objects.get_or_create(user_email=user_email)
-                
-                # Update existing information
-                for category, items in extraction.items():
-                    if category not in profile.key_information:
-                        profile.key_information[category] = items
-                    else:
-                        # Convert to set to remove duplicates
-                        existing_items = set(profile.key_information[category])
-                        new_items = set(items)
-                        profile.key_information[category] = list(existing_items | new_items)
-                
-                profile.save()
+                try:
+                    info = json.loads(extraction)
+                    if isinstance(info, dict):  # Verify we got a valid dictionary
+                        profile, created = UserProfile.objects.get_or_create(user_email=user_email)
+                        
+                        # Update existing information
+                        for category, items in info.items():
+                            if isinstance(items, list):  # Verify items is a list
+                                if category not in profile.key_information:
+                                    profile.key_information[category] = items
+                                else:
+                                    # Convert to set to remove duplicates
+                                    existing_items = set(profile.key_information[category])
+                                    new_items = set(items)
+                                    profile.key_information[category] = list(existing_items | new_items)
+                        
+                        profile.save()
+                except json.JSONDecodeError as e:
+                    print(f"Failed to parse extraction response: {extraction}")
+                    print(f"JSON Error: {e}")
         except Exception as e:
             print(f"Error updating user profile: {e}")
 
