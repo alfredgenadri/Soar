@@ -12,17 +12,17 @@ class BedrockAgent:
         self.session = boto3.Session(
             aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
             aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
-            region_name=os.getenv('AWS_REGION', 'ca-central-1')
+            region_name=os.getenv('AWS_REGION')
         )
         
         self.bedrock_runtime = self.session.client(
             service_name='bedrock-runtime',
-            region_name=os.getenv('AWS_REGION', 'ca-central-1')
+            region_name=os.getenv('AWS_REGION')
         )
         
         self.bedrock_agent_runtime = self.session.client(
             service_name='bedrock-agent-runtime',
-            region_name=os.getenv('AWS_REGION', 'ca-central-1')
+            region_name=os.getenv('AWS_REGION')
         )
         
         self.agent_id = os.getenv('BEDROCK_AGENT_ID')

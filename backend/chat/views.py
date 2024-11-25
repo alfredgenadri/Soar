@@ -185,9 +185,11 @@ class MessageView(APIView):
         full_response = ""
         
         try:
+            # Generate chat response first
             for chunk in bedrock.generate_stream(prompt, user_email=user_email):
-                full_response += chunk
-                yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+                if not chunk.startswith('{"') and not chunk.endswith('"}'):  # Skip if chunk looks like JSON
+                    full_response += chunk
+                    yield f"data: {json.dumps({'chunk': chunk})}\n\n"
             
             # Save the message after getting full response
             conversation = Conversation.objects.get(id=conversation_id)
@@ -207,7 +209,11 @@ class MessageView(APIView):
             
             # Update user profile with new information
             if user_email and user_email != 'guest':
-                self.update_user_profile(user_email, user_message, full_response)
+                # Do this in the background to not affect response time
+                threading.Thread(
+                    target=self.update_user_profile,
+                    args=(user_email, user_message, full_response)
+                ).start()
                 
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
