@@ -108,7 +108,7 @@ class MessageView(APIView):
         Bot response: {response}
 
         Format your response EXACTLY as a JSON object with these categories as keys, or return an empty JSON object if no important information found.
-        Example: {{"goals": ["wants to work out daily"], "challenges": ["finding time to exercise"]}}
+        Example: {{"goals": ["wants to work out daily"], "challenges": ["finding time to exercise"], "first name": ["james"], "preferences": ["speak in english only"], "important life events": ["father is in the hospital"]}}
         Only respond with the JSON object, nothing else.""".format(
             message=message_content,
             response=bot_response
@@ -149,6 +149,7 @@ class MessageView(APIView):
                 context = "Important information about this user:\n"
                 for category, items in profile.key_information.items():
                     context += f"{category.title()}: {', '.join(items)}\n"
+                print(context)
                 return context
         except UserProfile.DoesNotExist:
             return ""
@@ -188,7 +189,14 @@ class MessageView(APIView):
         try:
             # Generate chat response first
             for chunk in bedrock.generate_stream(prompt, user_email=user_email):
-                if not chunk.startswith('{"') and not chunk.endswith('"}'):  # Skip if chunk looks like JSON
+                # Only filter out valid JSON objects that match our expected format
+                try:
+                    json_obj = json.loads(chunk)
+                    expected_keys = ['goals', 'preferences', 'challenges', 'important life events', 'first name']
+                    if any(key.lower() in json_obj for key in expected_keys):
+                        continue  # Skip profile update JSON
+                except json.JSONDecodeError:
+                    # Not a JSON object, send it to the user
                     full_response += chunk
                     yield f"data: {json.dumps({'chunk': chunk})}\n\n"
             
