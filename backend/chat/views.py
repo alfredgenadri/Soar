@@ -102,6 +102,7 @@ class MessageView(APIView):
         - Preferences
         - Challenges
         - Important life events
+        - First Name
 
         Previous message: {message}
         Bot response: {response}
@@ -262,18 +263,3 @@ class SpeechToTextView(APIView):
             return Response({"error": "Could not transcribe audio"}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"text": transcribed_text, "detected_language": detected_lang})
-
-
-class FeedbackView(APIView):
-    def post(self, request):
-        try:
-            data = request.data.copy()
-            data['user_email'] = request.user.email if request.user.is_authenticated else None
-            
-            serializer = FeedbackSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response({'message': 'Feedback submitted successfully'})
-            return Response(serializer.errors, status=400)
-        except Exception as e:
-            return Response({'error': str(e)}, status=500)
